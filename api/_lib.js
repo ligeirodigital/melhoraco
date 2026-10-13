@@ -5,8 +5,8 @@
 // Tamanho com preço null fica indisponível no site.
 const TAMANHOS = {
   "15": { promo: 59, normal: 90 },
-  "20": { promo: null, normal: null },
-  "30": { promo: null, normal: null },
+  "20": { promo: null, normal: 120 },
+  "30": { promo: null, normal: 180 },
 };
 const FIM_PROMO = Date.parse("2026-11-01T03:00:00Z"); // 31/10/2026 23:59 em Fortaleza
 const FRETE_GRATIS_A_PARTIR = 200; // pedidos a partir deste valor não pagam entrega

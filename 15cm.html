@@ -366,7 +366,7 @@ fbq('init','1286022477066942');fbq('track','PageView');fbq('track','ViewContent'
 var WHATSAPP = "5585992753337";
 // Mesmas regras do servidor (api/_lib.js). O servidor recalcula o total antes de cobrar.
 var FIM_PROMO = Date.parse("2026-11-01T03:00:00Z");
-var TAMANHOS = { "15": { promo: 59, normal: 90 }, "20": { promo: null, normal: null }, "30": { promo: null, normal: null } };
+var TAMANHOS = { "15": { promo: 59, normal: 90 }, "20": { promo: null, normal: 120 }, "30": { promo: null, normal: 180 } };
 function preco(t){ var x = TAMANHOS[t]; if (!x) return null; var p = Date.now() < FIM_PROMO ? (x.promo == null ? x.normal : x.promo) : x.normal; return p > 0 ? p : null; }
 var tamanho = "15";
 var UNIT = preco("15");
