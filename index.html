@@ -35,7 +35,7 @@ p{margin:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:14px 26px;border-radius:12px;font-weight:700;font-size:18px;text-decoration:none;border:0;cursor:pointer;transition:background .15s}
 .btn-wa{background:var(--green);color:#fff}
 .btn-wa:hover{background:var(--green-dark)}
-.btn-white{background:#fff;color:var(--green)}
+.btn-white{background:#fff;color:var(--blue)}
 .btn svg{width:22px;height:22px;flex:none}
 
 /* Topo */
@@ -49,14 +49,14 @@ header .btn{min-height:44px;padding:10px 14px;font-size:15px;flex:none}
 
 /* Hero */
 .hero .wrap{display:grid;grid-template-columns:1fr;gap:28px;padding-top:12px;padding-bottom:56px}
-.hero-text{display:flex;flex-direction:column;gap:18px}
+.hero-text{display:flex;flex-direction:column;gap:14px}
 .hero h1 span{color:var(--blue)}
 .lead{font-size:19px;color:var(--ink-2)}
 .price{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px}
 .price s{font-size:22px;color:#6B7079}
 .price .now{font-family:'Bebas Neue',sans-serif;font-size:clamp(68px,18vw,92px);color:var(--blue);line-height:.9}
 .price .unit{font-weight:600;color:var(--ink-2)}
-.hero .btn-wa{width:100%}
+.hero .btn-buy,.hero .btn-link{width:100%}
 .small{font-size:14px;color:var(--muted)}
 .hero-img{border-radius:18px;width:100%;aspect-ratio:1/1;object-fit:cover}
 
@@ -92,6 +92,37 @@ section.block{padding:64px 0}
 .calc-row{display:flex;justify-content:space-between;gap:10px;color:var(--ink-2)}
 .calc-row s{color:#6B7079}
 .calc-total{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--blue);line-height:.9}
+
+
+/* Pedido */
+.btn-buy{background:var(--blue);color:#fff}
+.btn-buy:hover{background:#123499}
+.btn-buy[disabled]{opacity:.6;cursor:wait}
+.btn-link{background:transparent;color:var(--ink);border:1px solid #CDD1D7}
+.order .wrap{display:grid;grid-template-columns:1fr;gap:26px;align-items:start}
+.order-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 32px rgba(17,18,20,.08)}
+.order-card h3{margin:6px 0 0;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:14px;font-weight:600;color:var(--ink-2)}
+.field input,.field select,.field textarea{font:inherit;font-size:16px;width:100%;background:var(--bg);color:var(--ink);border:1px solid #CDD1D7;border-radius:10px;padding:12px 14px;min-height:48px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--blue);outline-offset:1px}
+.field .big{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.08em;padding:4px 14px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row3{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:48px;height:48px;border-radius:10px;border:1px solid #CDD1D7;background:#fff;font-size:24px;cursor:pointer}
+.qty output{font-weight:700;font-size:20px;min-width:24px;text-align:center}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink-2)}
+.check input{width:22px;height:22px;margin-top:2px;flex:none}
+.summary{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.summary div{display:flex;justify-content:space-between;gap:10px;color:var(--ink-2)}
+.summary .tot{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--blue);line-height:.9;justify-content:space-between;align-items:baseline}
+.summary .tot span:first-child{font-family:'Barlow',sans-serif;font-size:16px;font-weight:700;color:var(--ink)}
+.hint{font-size:14px;color:var(--muted)}
+.erro{background:#FDECEC;color:#8A1C1C;border-radius:10px;padding:10px 14px;font-size:15px}
+.secure{display:flex;gap:8px;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
+.order-side{display:flex;flex-direction:column;gap:14px}
+.order-side li{margin-bottom:6px}
 
 /* Como funciona */
 .how{background:#fff;border-top:1px solid var(--line)}
@@ -129,11 +160,13 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
   :root{--gutter:28px}
   .trust .wrap{grid-template-columns:repeat(4,minmax(0,1fr))}
   .gallery{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .hero .btn-wa{width:auto;align-self:flex-start}
+  .hero .btn-buy,.hero .btn-link{width:auto;align-self:flex-start}
 }
 @media (min-width:960px){
   .hero .wrap{grid-template-columns:1.15fr 1fr;align-items:center;gap:48px;padding-top:24px;padding-bottom:80px}
   .about .wrap,.calc .wrap,.how .wrap{grid-template-columns:1fr 1fr;gap:56px}
+  .order .wrap{grid-template-columns:1fr 1.15fr;gap:56px}
+  .order-card{padding:30px}
   .about .wrap{padding-top:80px;padding-bottom:80px}
   .how .wrap{grid-template-columns:1fr 1.1fr}
   section.block{padding:84px 0}
@@ -141,6 +174,12 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
   footer .wrap{padding-bottom:24px}
 }
 </style>
+<!-- Meta Pixel: [Melhoraço] Pixel -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1286022477066942');fbq('track','PageView');fbq('track','ViewContent',{content_name:'Número de casa inox 15cm',currency:'BRL',value:59});
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1286022477066942&ev=PageView&noscript=1"></noscript>
 </head>
 <body>
 
@@ -163,11 +202,9 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
       <h1 class="display">Sua fachada merece <span>um número de respeito.</span></h1>
       <p class="lead">Números residenciais em aço inox AISI 304, com 15 cm de altura. Brilho espelhado que não enferruja e é visto de longe.</p>
       <div class="price"><s>R$ 90</s><span class="now">R$ 59</span><span class="unit">por dígito</span></div>
-      <a class="btn btn-wa js-wa" href="#" data-msg="Oi! Quero meu número de inox com desconto">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 20.5l1.8-5.2A8.4 8.4 0 1 1 21 11.5z"/></svg>
-        Quero meu número no WhatsApp
-      </a>
-      <p class="small">Entrega em Fortaleza e região · Pix ou cartão</p>
+      <a class="btn btn-buy" href="#pedido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></svg>Comprar agora</a>
+      <a class="btn btn-link js-wa" href="#" data-msg="Oi! Tenho uma dúvida sobre os números de inox">Tirar dúvida no WhatsApp</a>
+      <p class="small">Pague com Pix ou cartão em até 3x · Entrega grátis acima de R$ 200 em Fortaleza e região</p>
     </div>
     <img class="hero-img" src="img/fachada-742.jpg" alt="Número 742 em aço inox espelhado instalado em muro" width="1000" height="1000">
   </div>
@@ -208,19 +245,64 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
   </div>
 </section>
 
-<section class="block calc">
+<section class="block order" id="pedido">
   <div class="wrap">
-    <div class="section-head">
-      <h2 class="display">Quanto fica o número da sua casa?</h2>
-      <p>Digite o número e veja o valor na hora, já com o desconto da promoção.</p>
+    <div class="order-side">
+      <div class="section-head">
+        <h2 class="display">Monte seu pedido</h2>
+        <p>Digite o número da sua casa, informe o endereço e pague com Pix ou cartão. A gente separa e entrega.</p>
+      </div>
+      <ul class="hint">
+        <li>R$ <span class="js-unit">59</span> por dígito, aço inox AISI 304, 15 cm</li>
+        <li>Entrega grátis acima de R$ 200 em Fortaleza e região (abaixo disso, R$ 15)</li>
+        <li>Pix ou cartão em até 3x pelo Mercado Pago</li>
+        <li>Dúvida antes de comprar? <a class="js-wa" href="#" data-msg="Oi! Tenho uma dúvida antes de comprar">Chame no WhatsApp</a></li>
+      </ul>
     </div>
-    <div class="calc-card">
-      <label for="num">NÚMERO DA CASA</label>
-      <input id="num" type="text" inputmode="numeric" autocomplete="off" value="742" placeholder="Ex.: 1250">
-      <div class="calc-row"><span id="calc-digits">3 dígitos × R$ 59</span><s id="calc-old">R$ 270</s></div>
-      <div class="calc-total" id="calc-total">R$ 177</div>
-      <a class="btn btn-wa" id="calc-wa" href="#">Pedir este número no WhatsApp</a>
-    </div>
+    <form class="order-card" id="form-pedido" novalidate>
+      <div class="field">
+        <label for="numero_casa">Número da casa</label>
+        <input class="big" id="numero_casa" name="numero_casa" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="742" required>
+        <span class="hint" id="digitos-info">Só os algarismos; cada um é uma peça.</span>
+      </div>
+      <div class="field">
+        <label>Quantidade de jogos</label>
+        <div class="qty"><button type="button" id="menos" aria-label="Diminuir">−</button><output id="jogos">1</output><button type="button" id="mais" aria-label="Aumentar">+</button><span class="hint">Um jogo extra para a casa dos pais ou de praia?</span></div>
+      </div>
+
+      <h3>SEUS DADOS</h3>
+      <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" autocomplete="name" required></div>
+      <div class="field"><label for="telefone">WhatsApp com DDD</label><input id="telefone" name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(85) 9 0000-0000" required></div>
+
+      <h3>ENDEREÇO DE ENTREGA</h3>
+      <div class="row2">
+        <div class="field"><label for="cep">CEP</label><input id="cep" name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="60000-000" required></div>
+        <div class="field"><label for="cidade">Cidade</label>
+          <select id="cidade" name="cidade" required>
+            <option>Fortaleza</option><option>Caucaia</option><option>Eusébio</option><option>Maracanaú</option><option>Aquiraz</option><option>Itaitinga</option><option>Pacatuba</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="rua">Rua</label><input id="rua" name="rua" autocomplete="address-line1" required></div>
+        <div class="field"><label for="numero_endereco">Número</label><input id="numero_endereco" name="numero_endereco" required></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="bairro">Bairro</label><input id="bairro" name="bairro" required></div>
+        <div class="field"><label for="complemento">Complemento</label><input id="complemento" name="complemento" autocomplete="address-line2"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="instalacao" name="instalacao"> Quero que a Melhoraço instale (o valor é combinado pelo WhatsApp depois da compra)</label>
+      <div class="field"><label for="observacao">Observação (opcional)</label><textarea id="observacao" name="observacao" rows="2" maxlength="200"></textarea></div>
+
+      <div class="summary" aria-live="polite">
+        <div><span id="sum-itens">0 dígitos × R$ 59</span><span id="sum-sub">R$ 0</span></div>
+        <div><span>Entrega</span><span id="sum-frete">–</span></div>
+        <div class="tot"><span>Total</span><span id="sum-total">R$ 0</span></div>
+      </div>
+      <div class="erro" id="erro" hidden></div>
+      <button class="btn btn-buy" id="pagar" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></svg>Ir para o pagamento</button>
+      <div class="secure"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Pagamento seguro pelo Mercado Pago</div>
+    </form>
   </div>
 </section>
 
@@ -230,8 +312,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
     <div>
       <div class="section-head"><h2 class="display">Como funciona</h2></div>
       <div class="steps">
-        <div class="step"><b>1</b><div><h3>Chama no WhatsApp</h3><p>Mande o número da casa e, se quiser, uma foto da fachada.</p></div></div>
-        <div class="step"><b>2</b><div><h3>Veja como fica</h3><p>A gente simula o número na sua fachada antes de você decidir.</p></div></div>
+        <div class="step"><b>1</b><div><h3>Monte o pedido aqui no site</h3><p>Digite o número da casa e o endereço. O total aparece na hora.</p></div></div>
+        <div class="step"><b>2</b><div><h3>Pague com Pix ou cartão</h3><p>Pagamento seguro pelo Mercado Pago, em até 3x no cartão.</p></div></div>
         <div class="step"><b>3</b><div><h3>Receba bem embalado</h3><p>Cada dígito chega protegido, pronto para instalar. Entrega em Fortaleza e região.</p></div></div>
       </div>
     </div>
@@ -243,9 +325,10 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
     <div class="section-head"><h2 class="display">Perguntas frequentes</h2></div>
     <details><summary>O preço é por número inteiro ou por dígito?</summary><p>Por dígito. O número 123 tem 3 dígitos: 3 × R$ 59 = R$ 177.</p></details>
     <details><summary>É inox de verdade? Enferruja?</summary><p>É aço inox AISI 304, o mesmo usado em cozinhas industriais. Não enferruja e tem garantia de 5 anos.</p></details>
-    <details><summary>Vocês entregam no meu bairro?</summary><p>Entregamos em Fortaleza e região metropolitana. Confirme seu endereço pelo WhatsApp.</p></details>
+    <details><summary>Vocês entregam no meu bairro?</summary><p>Entregamos em Fortaleza, Caucaia, Eusébio, Maracanaú, Aquiraz, Itaitinga e Pacatuba.</p></details>
     <details><summary>Como instalo?</summary><p>Fale com a gente pelo WhatsApp que explicamos a instalação. Se preferir, fazemos a instalação no local.</p></details>
-    <details><summary>Quais as formas de pagamento?</summary><p>Pix ou cartão de crédito.</p></details>
+    <details><summary>Quais as formas de pagamento?</summary><p>Pix ou cartão de crédito em até 3x, direto aqui no site pelo Mercado Pago.</p></details>
+    <details><summary>Quanto custa a entrega?</summary><p>Grátis para pedidos a partir de R$ 200 em Fortaleza e região. Abaixo disso, R$ 15.</p></details>
     <details><summary>Fazem pedidos para condomínio ou empresa?</summary><p>Sim, com preço especial para pedidos grandes. Fale com a gente.</p></details>
   </div>
 </section>
@@ -254,10 +337,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
   <div class="wrap">
     <h2 class="display">Depois de 31/10, o preço volta para R$ 90.</h2>
     <p>Garanta o seu a R$ 59 por dígito.</p>
-    <a class="btn btn-white js-wa" href="#" data-msg="Oi! Quero meu número de inox com desconto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 20.5l1.8-5.2A8.4 8.4 0 1 1 21 11.5z"/></svg>
-      Chamar no WhatsApp agora
-    </a>
+    <a class="btn btn-white" href="#pedido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></svg>Comprar agora</a>
   </div>
 </section>
 </main>
@@ -270,35 +350,101 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;p
 </footer>
 
 <div class="sticky-wa">
-  <a class="btn btn-wa js-wa" href="#" data-msg="Oi! Quero meu número de inox com desconto">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 20.5l1.8-5.2A8.4 8.4 0 1 1 21 11.5z"/></svg>
-    Pedir pelo WhatsApp · R$ 59 o dígito
-  </a>
+  <a class="btn btn-buy" href="#pedido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></svg>Comprar · R$ 59 o dígito</a>
 </div>
 
 <script>
-// >>> Troque pelo número do WhatsApp da Melhoraço: 55 + DDD + número, só dígitos <<<
 var WHATSAPP = "5585992753337";
+// Mesmas regras do servidor (api/_lib.js). O servidor recalcula o total antes de cobrar.
+var FIM_PROMO = Date.parse("2026-11-01T03:00:00Z");
+var UNIT = Date.now() < FIM_PROMO ? 59 : 90;
+var FRETE_GRATIS = 200, TAXA_ENTREGA = 15;
 
 function waLink(msg){ return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg); }
 document.querySelectorAll(".js-wa").forEach(function(a){
   a.href = waLink(a.dataset.msg); a.target = "_blank"; a.rel = "noopener";
+  a.addEventListener("click", function(){ if (window.fbq) fbq("track", "Contact"); });
+});
+document.querySelectorAll(".js-unit").forEach(function(e){ e.textContent = UNIT; });
+
+function brl(v){ return "R$ " + v.toLocaleString("pt-BR", {minimumFractionDigits: 0, maximumFractionDigits: 2}); }
+var $ = function(id){ return document.getElementById(id); };
+var jogos = 1;
+
+function calcular(){
+  var num = $("numero_casa").value.replace(/\D/g, "");
+  if ($("numero_casa").value !== num) $("numero_casa").value = num;
+  var d = num.length, sub = d * UNIT * jogos;
+  var frete = d === 0 ? 0 : (sub >= FRETE_GRATIS ? 0 : TAXA_ENTREGA);
+  $("sum-itens").textContent = d + (d === 1 ? " dígito" : " dígitos") + " × R$ " + UNIT + (jogos > 1 ? " × " + jogos + " jogos" : "");
+  $("sum-sub").textContent = brl(sub);
+  $("sum-frete").textContent = d === 0 ? "–" : (frete === 0 ? "Grátis" : brl(frete));
+  $("sum-total").textContent = brl(sub + frete);
+  $("digitos-info").textContent = d === 0 ? "Só os algarismos; cada um é uma peça." :
+    (frete > 0 ? "Faltam " + brl(FRETE_GRATIS - sub) + " para a entrega grátis." : "Entrega grátis neste pedido.");
+  $("jogos").textContent = jogos;
+  return { digitos: d, total: sub + frete };
+}
+$("numero_casa").addEventListener("input", calcular);
+$("menos").addEventListener("click", function(){ jogos = Math.max(1, jogos - 1); calcular(); });
+$("mais").addEventListener("click", function(){ jogos = Math.min(5, jogos + 1); calcular(); });
+
+// Máscaras simples e preenchimento do endereço pelo CEP (ViaCEP)
+$("telefone").addEventListener("input", function(e){
+  var v = e.target.value.replace(/\D/g, "").slice(0, 11);
+  e.target.value = v.length > 6 ? "(" + v.slice(0,2) + ") " + v.slice(2, v.length - 4) + "-" + v.slice(-4) : v;
+});
+$("cep").addEventListener("input", function(e){
+  var v = e.target.value.replace(/\D/g, "").slice(0, 8);
+  e.target.value = v.length > 5 ? v.slice(0,5) + "-" + v.slice(5) : v;
+  if (v.length === 8) {
+    fetch("https://viacep.com.br/ws/" + v + "/json/").then(function(r){ return r.json(); }).then(function(c){
+      if (c.erro) return;
+      if (c.logradouro && !$("rua").value) $("rua").value = c.logradouro;
+      if (c.bairro && !$("bairro").value) $("bairro").value = c.bairro;
+      var opt = Array.prototype.find.call($("cidade").options, function(o){ return o.text === c.localidade; });
+      if (opt) $("cidade").value = opt.text;
+      else mostrarErro("Ainda não entregamos em " + c.localidade + ". Chame no WhatsApp que a gente vê um jeito.");
+      $("numero_endereco").focus();
+    }).catch(function(){});
+  }
 });
 
-var input = document.getElementById("num");
-function brl(v){ return "R$ " + v.toLocaleString("pt-BR"); }
-function updateCalc(){
-  var num = input.value.trim();
-  var d = num.replace(/\D/g, "").length;
-  document.getElementById("calc-digits").textContent = (d === 1 ? "1 dígito" : d + " dígitos") + " × R$ 59";
-  document.getElementById("calc-old").textContent = brl(d * 90);
-  document.getElementById("calc-total").textContent = brl(d * 59);
-  var wa = document.getElementById("calc-wa");
-  wa.href = waLink("Oi! Quero o número " + num + " em inox (" + brl(d * 59) + ")");
-  wa.target = "_blank"; wa.rel = "noopener";
+function mostrarErro(msg){ $("erro").textContent = msg; $("erro").hidden = !msg; }
+
+$("form-pedido").addEventListener("submit", function(e){
+  e.preventDefault();
+  mostrarErro("");
+  var c = calcular();
+  if (c.digitos === 0) { mostrarErro("Digite o número da sua casa."); $("numero_casa").focus(); return; }
+  var dados = {
+    numero_casa: $("numero_casa").value, jogos: jogos,
+    nome: $("nome").value, telefone: $("telefone").value, cep: $("cep").value,
+    rua: $("rua").value, numero_endereco: $("numero_endereco").value, complemento: $("complemento").value,
+    bairro: $("bairro").value, cidade: $("cidade").value,
+    instalacao: $("instalacao").checked, observacao: $("observacao").value
+  };
+  var botao = $("pagar"); botao.disabled = true; botao.lastChild.textContent = "Abrindo o pagamento…";
+  if (window.fbq) fbq("track", "InitiateCheckout", { value: c.total, currency: "BRL", num_items: c.digitos * jogos });
+  fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (res.ok && res.j.url) { window.location.href = res.j.url; return; }
+      throw new Error(res.j.erro || "Não foi possível abrir o pagamento.");
+    })
+    .catch(function(err){
+      mostrarErro(err.message + " Se preferir, chame no WhatsApp.");
+      botao.disabled = false; botao.lastChild.textContent = "Ir para o pagamento";
+    });
+});
+calcular();
+
+// Esconde a barra fixa de compra enquanto o formulário está na tela
+if ("IntersectionObserver" in window) {
+  var barra = document.querySelector(".sticky-wa");
+  new IntersectionObserver(function(es){ barra.style.display = es[0].isIntersecting ? "none" : ""; }, { threshold: 0.05 })
+    .observe(document.getElementById("pedido"));
 }
-input.addEventListener("input", updateCalc);
-updateCalc();
 </script>
 </body>
 </html>
