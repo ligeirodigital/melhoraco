@@ -36,13 +36,14 @@ module.exports = async (req, res) => {
   if (!CIDADES.includes(pedido.cidade)) erros.push("uma cidade atendida");
   if (erros.length) return res.status(400).json({ erro: "Confira " + erros.join(", ") + "." });
 
-  const c = calcular(pedido.numero_casa, b.jogos);
+  const c = calcular(pedido.numero_casa, b.tamanho);
+  if (!c) return res.status(400).json({ erro: "Escolha um tamanho disponível." });
   const id = "MLH-" + Date.now().toString(36).toUpperCase();
   const base = process.env.SITE_URL || `https://${req.headers.host}`;
 
   const itens = [{
-    id: "numero-inox-15cm",
-    title: `Número inox 15 cm "${pedido.numero_casa}" (${c.digitos} dígitos)` + (c.jogos > 1 ? ` x${c.jogos} jogos` : ""),
+    id: `numero-inox-${c.tamanho}cm`,
+    title: `Número inox ${c.tamanho} cm "${pedido.numero_casa}" (${c.digitos} dígitos)`,
     quantity: 1,
     unit_price: c.subtotal,
     currency_id: "BRL",
@@ -60,7 +61,7 @@ module.exports = async (req, res) => {
     external_reference: id,
     metadata: {
       pedido_id: id, ...pedido,
-      digitos: c.digitos, jogos: c.jogos, unitario: c.unitario,
+      tamanho: c.tamanho, digitos: c.digitos, unitario: c.unitario,
       subtotal: c.subtotal, frete: c.frete, total: c.total,
     },
     notification_url: `${base}/api/webhook`,

@@ -46,7 +46,7 @@ function doPost(e) {
 
     var observacao = [
       'Site', marca, v.pedido_id,
-      'Nº ' + v.numero_casa + (v.jogos > 1 ? ' x' + v.jogos : ''),
+      'Nº ' + v.numero_casa + ' · ' + v.tamanho + ' cm',
       'Tel ' + v.telefone,
       v.endereco + ' - ' + v.cidade + ' - CEP ' + v.cep,
       v.parcelas > 1 ? v.parcelas + 'x' : '',
@@ -58,7 +58,7 @@ function doPost(e) {
       v.nome,                            // B Cliente
       v.bairro,                          // C Bairro
       'Site',                            // D Canal de origem
-      Number(v.digitos) * Number(v.jogos || 1), // E Dígitos (total vendido)
+      Number(v.digitos),                 // E Dígitos
       Number(v.total),                   // F Valor (R$), entrega inclusa
       v.pagamento,                       // G Pagamento
       v.instalacao ? 'Sim' : 'Não',      // H Instalação

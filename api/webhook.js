@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
       telefone: m.telefone || "",
       numero_casa: m.numero_casa || "",
       digitos: Number(m.digitos) || 0,
-      jogos: Number(m.jogos) || 1,
+      tamanho: String(m.tamanho || "15"),
       total,
       frete: Number(m.frete) || 0,
       pagamento: formaPagamento,
@@ -83,7 +83,7 @@ async function avisarWhatsApp(v) {
   const msg = [
     "✅ PEDIDO PAGO NO SITE",
     `Pedido: ${v.pedido_id}`,
-    `Número: ${v.numero_casa} (${v.digitos} dígitos)${v.jogos > 1 ? ` × ${v.jogos} jogos` : ""}`,
+    `Número: ${v.numero_casa} · ${v.tamanho} cm (${v.digitos} dígitos)`,
     `Total: ${brl(v.total)} no ${v.pagamento}${v.parcelas > 1 ? ` em ${v.parcelas}x` : ""}${v.frete ? ` (entrega ${brl(v.frete)})` : " (entrega grátis)"}`,
     `Cliente: ${v.nome} · wa.me/55${String(v.telefone).replace(/^55/, "")}`,
     `Endereço: ${v.endereco} · ${v.bairro} · ${v.cidade} · CEP ${v.cep}`,

@@ -109,9 +109,18 @@ section.block{padding:64px 0}
 .field .big{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.08em;padding:4px 14px}
 .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .row3{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-.qty{display:flex;align-items:center;gap:10px}
-.qty button{width:48px;height:48px;border-radius:10px;border:1px solid #CDD1D7;background:#fff;font-size:24px;cursor:pointer}
-.qty output{font-weight:700;font-size:20px;min-width:24px;text-align:center}
+.sizes{border:0;padding:0;margin:0}
+.sizes legend{font-size:14px;font-weight:600;color:var(--ink-2);margin-bottom:6px;padding:0}
+.size-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.size{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid #CDD1D7;border-radius:12px;padding:12px 6px;cursor:pointer;text-align:center;background:#fff}
+.size input{position:absolute;opacity:0;pointer-events:none}
+.size b{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:28px;line-height:1;white-space:nowrap}
+.size s{font-size:13px;color:#6B7079}
+.size span{font-size:14px;font-weight:700;color:var(--blue)}
+.size small{font-size:12px;color:var(--muted)}
+.size:has(input:checked){border-color:var(--blue);background:#EEF2FF}
+.size:has(input:focus-visible){outline:3px solid var(--blue);outline-offset:2px}
+.size.off{opacity:.5;cursor:not-allowed}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink-2)}
 .check input{width:22px;height:22px;margin-top:2px;flex:none}
 .summary{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
@@ -253,7 +262,7 @@ fbq('init','1286022477066942');fbq('track','PageView');fbq('track','ViewContent'
         <p>Digite o número da sua casa, informe o endereço e pague com Pix ou cartão. A gente separa e entrega.</p>
       </div>
       <ul class="hint">
-        <li>R$ <span class="js-unit">59</span> por dígito, aço inox AISI 304, 15 cm</li>
+        <li>Aço inox AISI 304 em 15, 20 ou 30 cm. 15 cm na promoção: R$ <span class="js-unit">59</span> por dígito</li>
         <li>Entrega grátis acima de R$ 200 em Fortaleza e região (abaixo disso, R$ 15)</li>
         <li>Pix ou cartão em até 3x pelo Mercado Pago</li>
         <li>Dúvida antes de comprar? <a class="js-wa" href="#" data-msg="Oi! Tenho uma dúvida antes de comprar">Chame no WhatsApp</a></li>
@@ -265,10 +274,10 @@ fbq('init','1286022477066942');fbq('track','PageView');fbq('track','ViewContent'
         <input class="big" id="numero_casa" name="numero_casa" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="742" required>
         <span class="hint" id="digitos-info">Só os algarismos; cada um é uma peça.</span>
       </div>
-      <div class="field">
-        <label>Quantidade de jogos</label>
-        <div class="qty"><button type="button" id="menos" aria-label="Diminuir">−</button><output id="jogos">1</output><button type="button" id="mais" aria-label="Aumentar">+</button><span class="hint">Um jogo extra para a casa dos pais ou de praia?</span></div>
-      </div>
+      <fieldset class="field sizes">
+        <legend>Tamanho</legend>
+        <div class="size-grid" id="tamanhos"></div>
+      </fieldset>
 
       <h3>SEUS DADOS</h3>
       <div class="field"><label for="nome">Nome completo</label><input id="nome" name="nome" autocomplete="name" required></div>
@@ -357,7 +366,10 @@ fbq('init','1286022477066942');fbq('track','PageView');fbq('track','ViewContent'
 var WHATSAPP = "5585992753337";
 // Mesmas regras do servidor (api/_lib.js). O servidor recalcula o total antes de cobrar.
 var FIM_PROMO = Date.parse("2026-11-01T03:00:00Z");
-var UNIT = Date.now() < FIM_PROMO ? 59 : 90;
+var TAMANHOS = { "15": { promo: 59, normal: 90 }, "20": { promo: null, normal: null }, "30": { promo: null, normal: null } };
+function preco(t){ var x = TAMANHOS[t]; if (!x) return null; var p = Date.now() < FIM_PROMO ? (x.promo == null ? x.normal : x.promo) : x.normal; return p > 0 ? p : null; }
+var tamanho = "15";
+var UNIT = preco("15");
 var FRETE_GRATIS = 200, TAXA_ENTREGA = 15;
 
 function waLink(msg){ return "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg); }
@@ -369,25 +381,33 @@ document.querySelectorAll(".js-unit").forEach(function(e){ e.textContent = UNIT;
 
 function brl(v){ return "R$ " + v.toLocaleString("pt-BR", {minimumFractionDigits: 0, maximumFractionDigits: 2}); }
 var $ = function(id){ return document.getElementById(id); };
-var jogos = 1;
+
+// Monta as opções de tamanho
+Object.keys(TAMANHOS).forEach(function(t){
+  var p = preco(t), x = TAMANHOS[t], promo = p && x.normal && p < x.normal;
+  var lab = document.createElement("label");
+  lab.className = "size" + (p ? "" : " off");
+  lab.innerHTML = '<input type="radio" name="tamanho" value="' + t + '"' + (t === tamanho ? " checked" : "") + (p ? "" : " disabled") + '>' +
+    "<b>" + t + " cm</b>" + (promo ? "<s>R$ " + x.normal + "</s>" : "") +
+    (p ? "<span>R$ " + p + "</span><small>por dígito</small>" : "<small>em breve</small>");
+  lab.querySelector("input").addEventListener("change", function(){ tamanho = t; calcular(); });
+  $("tamanhos").appendChild(lab);
+});
 
 function calcular(){
   var num = $("numero_casa").value.replace(/\D/g, "");
   if ($("numero_casa").value !== num) $("numero_casa").value = num;
-  var d = num.length, sub = d * UNIT * jogos;
+  var unit = preco(tamanho), d = num.length, sub = d * unit;
   var frete = d === 0 ? 0 : (sub >= FRETE_GRATIS ? 0 : TAXA_ENTREGA);
-  $("sum-itens").textContent = d + (d === 1 ? " dígito" : " dígitos") + " × R$ " + UNIT + (jogos > 1 ? " × " + jogos + " jogos" : "");
+  $("sum-itens").textContent = d + (d === 1 ? " dígito" : " dígitos") + " de " + tamanho + " cm × R$ " + unit;
   $("sum-sub").textContent = brl(sub);
   $("sum-frete").textContent = d === 0 ? "–" : (frete === 0 ? "Grátis" : brl(frete));
   $("sum-total").textContent = brl(sub + frete);
   $("digitos-info").textContent = d === 0 ? "Só os algarismos; cada um é uma peça." :
     (frete > 0 ? "Faltam " + brl(FRETE_GRATIS - sub) + " para a entrega grátis." : "Entrega grátis neste pedido.");
-  $("jogos").textContent = jogos;
   return { digitos: d, total: sub + frete };
 }
 $("numero_casa").addEventListener("input", calcular);
-$("menos").addEventListener("click", function(){ jogos = Math.max(1, jogos - 1); calcular(); });
-$("mais").addEventListener("click", function(){ jogos = Math.min(5, jogos + 1); calcular(); });
 
 // Máscaras simples e preenchimento do endereço pelo CEP (ViaCEP)
 $("telefone").addEventListener("input", function(e){
@@ -418,14 +438,14 @@ $("form-pedido").addEventListener("submit", function(e){
   var c = calcular();
   if (c.digitos === 0) { mostrarErro("Digite o número da sua casa."); $("numero_casa").focus(); return; }
   var dados = {
-    numero_casa: $("numero_casa").value, jogos: jogos,
+    numero_casa: $("numero_casa").value, tamanho: tamanho,
     nome: $("nome").value, telefone: $("telefone").value, cep: $("cep").value,
     rua: $("rua").value, numero_endereco: $("numero_endereco").value, complemento: $("complemento").value,
     bairro: $("bairro").value, cidade: $("cidade").value,
     instalacao: $("instalacao").checked, observacao: $("observacao").value
   };
   var botao = $("pagar"); botao.disabled = true; botao.lastChild.textContent = "Abrindo o pagamento…";
-  if (window.fbq) fbq("track", "InitiateCheckout", { value: c.total, currency: "BRL", num_items: c.digitos * jogos });
+  if (window.fbq) fbq("track", "InitiateCheckout", { value: c.total, currency: "BRL", num_items: c.digitos });
   fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados) })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
