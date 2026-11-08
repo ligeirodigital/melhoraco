@@ -80,7 +80,7 @@ const allowed = (items: NavItem[], perms: NavPermissions) =>
 
 /** Destinations shown directly in the mobile bottom bar (max 4 + "Mais"). */
 export function getPrimaryNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return [COMISSAO, LOJA_PUBLICA];
+  if (investorOnly(perms)) return [COMISSAO];
   return allowed(PRIMARY, perms);
 }
 
@@ -92,7 +92,7 @@ export function getSecondaryNav(perms: NavPermissions = {}): NavItem[] {
 
 /** Desktop sidebar: same information architecture, single list, no "Novo" (it has its own CTA). */
 export function getSidebarNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return [COMISSAO, LOJA_PUBLICA];
+  if (investorOnly(perms)) return [COMISSAO];
   return [
     ...allowed(PRIMARY, perms).filter((i) => i.id !== "novo"),
     ...allowed(SECONDARY, perms),
