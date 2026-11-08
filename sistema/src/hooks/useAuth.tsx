@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface AuthContextType {
@@ -34,49 +34,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isInvestor, setIsInvestor] = useState(false);
   const [profile, setProfile] = useState<{ name?: string; role?: string } | null>(null);
 
-  const checkInvestor = async (userId?: string) => {
+  /** Consulta direta à API REST com o token da sessão. Não usa o cliente do Supabase, que espera a trava de login. */
+  const restSelect = async <T,>(table: string, query: string, token: string): Promise<T[]> => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${token}`,
+        'Accept-Profile': 'melhoraco',
+      },
+    });
+    if (!res.ok) throw new Error(`${table} ${res.status}`);
+    return (await res.json()) as T[];
+  };
+
+  const checkInvestor = async (userId: string | undefined, token: string) => {
     if (!userId) { setIsInvestor(false); return; }
     try {
-      const { data } = await supabase.from('investors').select('id').eq('user_id', userId).maybeSingle();
-      setIsInvestor(!!data);
+      const rows = await restSelect<{ id: string }>('investors', `select=id&user_id=eq.${userId}&limit=1`, token);
+      setIsInvestor(rows.length > 0);
     } catch {
       setIsInvestor(false);
     }
   };
 
-  const checkAccess = async (email?: string, userId?: string) => {
+  const checkAccess = async (email: string | undefined, userId: string | undefined, token: string) => {
     if (!email) {
       setIsAllowed(false);
       setIsAdmin(false);
       setIsInvestor(false);
       return;
     }
-    await checkInvestor(userId);
-    
+    await checkInvestor(userId, token);
+
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     // Master user safety
     if (normalizedEmail === 'melhoracooficial@gmail.com') {
       setIsAllowed(true);
       setIsAdmin(true);
       return;
     }
-    
+
     try {
-      // Return to original logic: check only allowed_emails
-      const { data, error } = await supabase
-        .from('allowed_emails')
-        .select('email')
-        .ilike('email', normalizedEmail)
-        .maybeSingle();
-      
-      setIsAllowed(!!data);
-      setIsAdmin(normalizedEmail === 'melhoracooficial@gmail.com');
+      const rows = await restSelect<{ email: string }>(
+        'allowed_emails',
+        `select=email&email=ilike.${encodeURIComponent(normalizedEmail)}&limit=1`,
+        token,
+      );
+      setIsAllowed(rows.length > 0);
+      setIsAdmin(false);
     } catch (err) {
       console.error('Error checking access:', err);
       setIsAllowed(false);
     }
   };
+
+  /** Se a checagem travar, libera a tela com o acesso negado em vez de girar para sempre. */
+  const checkAccessWithTimeout = (email: string, userId: string, token: string) =>
+    Promise.race([
+      checkAccess(email, userId, token),
+      new Promise<void>((resolve) => setTimeout(() => {
+        console.error('Checagem de acesso demorou demais');
+        resolve();
+      }, 10000)),
+    ]);
 
   useEffect(() => {
     let isMounted = true;
@@ -95,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isMounted) setSession(session);
         
         if (session?.user?.email) {
-          await checkAccess(session.user.email, session.user.id);
+          await checkAccessWithTimeout(session.user.email, session.user.id, session.access_token);
         }
       } catch (err) {
         console.error("Auth init exception:", err);
@@ -117,9 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user?.email) {
         const { email, id } = session.user;
         setLoading(true);
+        const token = session.access_token;
         setTimeout(async () => {
           try {
-            await checkAccess(email, id);
+            await checkAccessWithTimeout(email, id, token);
           } finally {
             if (isMounted) setLoading(false);
           }
