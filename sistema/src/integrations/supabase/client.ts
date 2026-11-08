@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -26,5 +26,8 @@ export const supabase = createClient<Database, typeof DB_SCHEMA>(SUPABASE_URL, S
     storageKey: 'melhoraco-auth',
     persistSession: true,
     autoRefreshToken: true,
+    // Trava só dentro da página, sem navigator.locks: no Safari do iPhone a trava do navegador
+    // ficava presa depois do login e nenhuma consulta saía.
+    lock: processLock,
   },
 });
