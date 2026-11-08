@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { Link } from "react-router-dom";
 import { CreditCard, MessageCircle } from "lucide-react";
 import { FullQuote } from "@/types/models";
@@ -26,7 +27,7 @@ export function UnpaidApprovedQuotes({ quotes, loading = false }: { quotes: Full
       const tx = transactions?.[0];
       let url = tx?.checkout_url || tx?.payment_link;
       if (!url) {
-        const { data, error: createError } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-create-link`, { body: { quoteId: q.id, redirectUrl: `${window.location.origin}/pedido/${q.id}/sucesso` } });
+        const { data, error: createError } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-create-link`, { body: { quoteId: q.id, redirectUrl: `${appUrl()}/pedido/${q.id}/sucesso` } });
         if (createError || !data?.url) throw createError || new Error("Link indisponível");
         url = data.url;
       }

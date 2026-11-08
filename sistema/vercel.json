@@ -1,3 +1,10 @@
 {
-  "rewrites": [{ "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }]
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/", "destination": "/sistema/", "permanent": false },
+    { "source": "/sistema", "destination": "/sistema/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/sistema/:path((?!assets/)[^.]*)", "destination": "/sistema/index.html" }
+  ]
 }

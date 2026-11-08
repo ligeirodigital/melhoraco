@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
@@ -118,7 +119,7 @@ export default function OrderSuccessPage() {
     setRegenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-create-link`, {
-        body: { quoteId, redirectUrl: `${window.location.origin}/pedido/${quoteId}/sucesso` },
+        body: { quoteId, redirectUrl: `${appUrl()}/pedido/${quoteId}/sucesso` },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("Link indisponível");

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { Link } from "react-router-dom";
 import { CalendarClock, MessageCircle, XCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -26,7 +27,7 @@ export function FollowUpQueue({ quotes, stages = [], loading = false }: { quotes
   const active = queue.filter(q => !isFutureReturn(q));
   const total = active.reduce((sum, q) => sum + getQuoteTotal(q), 0);
   const call = (q: FullQuote) => {
-    const portalUrl = q.order_token ? `${window.location.origin}/p/${q.order_token}` : q.client_view_token ? `${window.location.origin}/p/q_${q.id}_${q.client_view_token}` : null;
+    const portalUrl = q.order_token ? `${appUrl()}/p/${q.order_token}` : q.client_view_token ? `${appUrl()}/p/q_${q.id}_${q.client_view_token}` : null;
     let text = getStageTemplate(stages.find(s => s.id === q.pipeline_stage_id)?.name, { clientName: q.client?.name, quoteNumber: q.id.slice(0, 8).toUpperCase(), daysStale: contactDays(q), portalUrl });
     if (!text.includes(q.id.slice(0, 8).toUpperCase())) text += `\nOrçamento #${q.id.slice(0, 8).toUpperCase()}`;
     if (portalUrl && !text.includes(portalUrl)) text += `\nSeu orçamento: ${portalUrl}`;

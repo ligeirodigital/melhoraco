@@ -14,6 +14,21 @@ interface CreateLinkBody {
   sandbox?: boolean;
 }
 
+
+// Endereço base do sistema (ex.: https://melhoraco.vercel.app/sistema).
+// Usa o redirectUrl enviado pelo site, cortando o trecho /pedido/... se houver.
+function appBase(redirectUrl?: string): string {
+  const fallback = (Deno.env.get("MELHORACO_SITE_URL") ?? "https://melhoraco.vercel.app/sistema").replace(/\/+$/, "");
+  if (!redirectUrl) return fallback;
+  try {
+    const u = new URL(redirectUrl);
+    const path = u.pathname.replace(/\/pedido\/.*$/, "").replace(/\/+$/, "");
+    return `${u.origin}${path}`;
+  } catch {
+    return fallback;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -86,9 +101,7 @@ serve(async (req) => {
 
     // ============ SANDBOX MODE ============
     if (effectiveSandbox) {
-      const origin =
-        (redirectUrl && new URL(redirectUrl).origin) || (Deno.env.get("MELHORACO_SITE_URL") ?? "https://melhoraco.vercel.app");
-      const sandboxUrl = `${origin}/sandbox/pay/${quoteId}?amount=${amount}`;
+      const sandboxUrl = `${appBase(redirectUrl)}/sandbox/pay/${quoteId}?amount=${amount}`;
 
       await supabase.from("payment_transactions").insert({
         user_id: quote.user_id,
@@ -135,9 +148,7 @@ serve(async (req) => {
     const priceInCents = Math.round(amount * 100);
     const cleanHandle = String(effectiveHandle).trim().replace(/^[@$]+/, "");
 
-    const origin =
-      (redirectUrl && new URL(redirectUrl).origin) || (Deno.env.get("MELHORACO_SITE_URL") ?? "https://melhoraco.vercel.app");
-    const successUrl = `${origin}/pedido/${quoteId}/sucesso`;
+    const successUrl = `${appBase(redirectUrl)}/pedido/${quoteId}/sucesso`;
 
     // ============ API oficial: POST /links ============
     // https://api.checkout.infinitepay.io/links

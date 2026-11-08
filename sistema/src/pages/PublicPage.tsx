@@ -1,4 +1,5 @@
 import { ProductImage } from "@/components/catalog/ProductImage";
+import { appUrl } from "@/lib/appUrl";
 import { CatalogPrice } from "@/components/catalog/CatalogPrice";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -681,7 +682,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                         toast.loading("Gerando link de pagamento...", { id: "ip-link" });
                         const { data, error } = await supabase.functions.invoke(
                           `${FN_PREFIX}infinitypay-create-link`,
-                          { body: { quoteId: quote.id, redirectUrl: `${window.location.origin}/pedido/${quote.id}/sucesso` } },
+                          { body: { quoteId: quote.id, redirectUrl: `${appUrl()}/pedido/${quote.id}/sucesso` } },
                         );
                         toast.dismiss("ip-link");
                         if (error) throw error;

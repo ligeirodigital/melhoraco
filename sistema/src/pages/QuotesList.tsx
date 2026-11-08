@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { FollowUpQueue } from "@/components/sales/FollowUpQueue";
 import { followUpQueue } from "@/lib/salesFollowUp";
@@ -354,8 +355,8 @@ export default function QuotesList() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const portalUrl = q.order_token 
-                                  ? `${window.location.origin}/p/${q.order_token}`
-                                  : `${window.location.origin}/p/q_${q.id}_${q.client_view_token}`;
+                                  ? `${appUrl()}/p/${q.order_token}`
+                                  : `${appUrl()}/p/q_${q.id}_${q.client_view_token}`;
                                 
                                 const text = formatWhatsApp(q, settings.data?.nubank_pix_key, settings.data?.nubank_pix_name, portalUrl);
                                 navigator.clipboard.writeText(text);

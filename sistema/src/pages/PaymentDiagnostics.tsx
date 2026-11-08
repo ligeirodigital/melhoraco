@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -104,7 +105,7 @@ export default function PaymentDiagnostics() {
             amount: 1,
             description: `TESTE - ${(quote as any).clients?.name || "cliente"}`,
             quoteId: qId,
-            redirectUrl: window.location.origin,
+            redirectUrl: appUrl(),
           },
         });
         if (error) throw new Error(error.message);

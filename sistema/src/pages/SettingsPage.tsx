@@ -1,4 +1,5 @@
 import { CatalogFields, emptyCatalogFields } from "@/components/catalog/CatalogFields";
+import { appUrl } from "@/lib/appUrl";
 import { CatalogManager } from "@/components/catalog/CatalogManager";
 import { useState, useEffect, useMemo } from "react";
 import { DbProduct, fetchProducts, supabase, upsertBusinessSettings } from "@/lib/cloudStore";
@@ -203,7 +204,7 @@ const LandingPagesManager = () => {
   };
 
   const copyLink = (slug: string) => {
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = `${appUrl()}/p/${slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado!");
   };

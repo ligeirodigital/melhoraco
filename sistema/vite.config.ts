@@ -4,6 +4,8 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // O sistema é servido em melhoraco.vercel.app/sistema (a raiz é a landing page).
+  base: "/sistema/",
   server: {
     host: "::",
     port: 8080,
@@ -19,6 +21,8 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   build: {
+    outDir: "dist/sistema",
+    emptyOutDir: true,
     // Split vendors into stable chunks so browser cache survives app updates.
     rollupOptions: {
       output: {

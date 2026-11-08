@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import FinancialAssistant from "./FinancialAssistant";
 
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { id: "manager" } }) }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { getSession: async () => ({ data: { session: { access_token: "test-session" } } }) } } }));
+vi.mock("@/integrations/supabase/client", () => ({ functionUrl: (n: string) => `https://example.supabase.co/functions/v1/melhoraco-${n}`, supabase: { auth: { getSession: async () => ({ data: { session: { access_token: "test-session" } } }) } } }));
 const snapshot = { context: { installments: { asOf: "2026-10-10", pending: 1000, overdue: 250, received: 0, pendingCount: 4, next30Days: 500 }, orders: { total: 69 } } };
 const mount = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><FinancialAssistant /></QueryClientProvider>);
 afterEach(() => vi.unstubAllGlobals());

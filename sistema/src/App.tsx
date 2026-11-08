@@ -33,6 +33,7 @@ const PaymentEventsPage = lazy(() => import("./pages/PaymentEventsPage"));
 
 
 import { Loader2 } from "lucide-react";
+import { BASE_PATH } from "@/lib/appUrl";
 import { useMounted } from "@/hooks/useMounted";
 
 const queryClient = new QueryClient({
@@ -78,7 +79,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <Sonner position="top-right" />
-        <BrowserRouter>
+        <BrowserRouter basename={BASE_PATH}>
           <PublicTracking />
           <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center bg-[#050505]">

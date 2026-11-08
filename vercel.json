@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/sistema", "destination": "https://melhoraco-sistema.vercel.app/sistema/" },
+    { "source": "/sistema/:path*", "destination": "https://melhoraco-sistema.vercel.app/sistema/:path*" }
+  ]
+}

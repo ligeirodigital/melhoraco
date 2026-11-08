@@ -7,7 +7,7 @@ import { FullQuote } from "@/types/models";
 const { mutate, mutateAsync, from, invoke, whatsapp } = vi.hoisted(() => ({ mutate: vi.fn(), mutateAsync: vi.fn(), from: vi.fn(), invoke: vi.fn(), whatsapp: vi.fn((_phone: string | null | undefined, _text: string, _tab?: Window | null) => true) }));
 vi.mock("@/hooks/useSalesFollowUp", () => ({ useSalesFollowUp: () => ({ mutate, mutateAsync, isPending: false }) }));
 vi.mock("@/lib/whatsappTemplates", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/whatsappTemplates")>(), openWhatsApp: whatsapp }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { from, functions: { invoke } } }));
+vi.mock("@/integrations/supabase/client", () => ({ FN_PREFIX: "melhoraco-", supabase: { from, functions: { invoke } } }));
 const quote = { id: "quote-123456", client_id: "client", status: "pendente", payment_status: "pending", created_at: "2026-10-01", order_token: "PORTAL", client: { name: "Ana Silva", phone: "85999999999" }, items: [{ unit_price: 1000, quantity: 1 }], delivery_fee: 0, installation_fee: 0, discount_amount: 0 } as FullQuote;
 beforeEach(() => { vi.clearAllMocks(); mutateAsync.mockResolvedValue(undefined); vi.spyOn(window, "open").mockReturnValue(null); });
 it("contato reaproveita template e grava o mesmo texto com nome, orçamento e portal", () => {
@@ -50,5 +50,5 @@ it("sem link existente usa a função InfinityPay atual e registra somente cobra
   render(<MemoryRouter><UnpaidApprovedQuotes quotes={[{ ...quote, status: "aprovado" }]} /></MemoryRouter>);
   fireEvent.click(screen.getByRole("button", { name: "Reenviar link de pagamento" }));
   await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ kind: "payment", text: expect.stringContaining("https://checkout.infinitepay.io/new") })));
-  expect(invoke).toHaveBeenCalledWith("infinitypay-create-link", { body: { quoteId: quote.id, redirectUrl: `${window.location.origin}/pedido/${quote.id}/sucesso` } });
+  expect(invoke).toHaveBeenCalledWith("melhoraco-infinitypay-create-link", { body: { quoteId: quote.id, redirectUrl: `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/pedido/${quote.id}/sucesso` } });
 });

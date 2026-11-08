@@ -1,4 +1,5 @@
 import { CatalogPrice } from "@/components/catalog/CatalogPrice";
+import { appUrl } from "@/lib/appUrl";
 import { ProductImage } from "@/components/catalog/ProductImage";
 import { isSoldOut, priceUnit } from "@/lib/catalog";
 import { useEffect, useMemo, useState } from "react";
@@ -234,7 +235,7 @@ export default function StorePage() {
 
       trackMetaEvent("InitiateCheckout", { value: totalPrice, currency: "BRL", num_items: cart.reduce((sum, item) => sum + item.quantity, 0) });
       const { data: pay, error: payErr } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-create-link`, {
-        body: { quoteId: res.quote_id, redirectUrl: `${window.location.origin}/pedido/${res.quote_id}/sucesso` },
+        body: { quoteId: res.quote_id, redirectUrl: `${appUrl()}/pedido/${res.quote_id}/sucesso` },
       });
       if (payErr) throw payErr;
       if (!pay?.url) throw new Error("Link de pagamento indisponível");
@@ -244,7 +245,7 @@ export default function StorePage() {
         id: res.quote_id, token: res.token, paymentUrl: pay.url,
       }));
 
-      const portalUrl = `${window.location.origin}/p/q_${res.quote_id}_${res.token}`;
+      const portalUrl = `${appUrl()}/p/q_${res.quote_id}_${res.token}`;
       const waText = buildOrderWhatsAppText({
         clientName: form.name.trim(),
         items: cart, total: totalPrice,

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -446,7 +447,7 @@ const QuoteViewPage = () => {
             <Button 
               className="h-14 rounded-2xl gap-3 px-8 font-black bg-slate-900 text-white hover:bg-slate-800 shadow-xl hover:shadow-2xl transition-all group"
               onClick={() => {
-                const portalUrl = `${window.location.origin}/p/${quote.order_token || quote.id}`;
+                const portalUrl = `${appUrl()}/p/${quote.order_token || quote.id}`;
                 const text = formatWhatsApp(quote, settings.data?.nubank_pix_key, settings.data?.nubank_pix_name, portalUrl);
                 navigator.clipboard.writeText(text);
                 toast.success("Texto + Link do Portal copiado!");

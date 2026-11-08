@@ -1,4 +1,5 @@
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
+import { appUrl } from "@/lib/appUrl";
 
 export type PaymentProvider = "mercadopago" | "nubank" | "infinitypay";
 export type PaymentStatus = "pending" | "paid" | "expired" | "refunded";
@@ -26,7 +27,7 @@ export async function createPaymentLink(params: CreatePaymentParams) {
       body: {
         handle: handle || undefined,
         quoteId,
-        redirectUrl: `${window.location.origin}/pedido/${quoteId}/sucesso`,
+        redirectUrl: `${appUrl()}/pedido/${quoteId}/sucesso`,
         sandbox,
       },
     });
