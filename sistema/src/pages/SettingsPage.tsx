@@ -189,13 +189,13 @@ const LandingPagesManager = () => {
     const filePath = `lp/${editingPage.id}-${Math.random()}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
-      .from('lp_images')
+      .from(BUCKETS.lpImages)
       .upload(filePath, file);
       
     if (uploadError) return toast.error("Erro no upload");
     
     const { data: { publicUrl } } = supabase.storage
-      .from('lp_images')
+      .from(BUCKETS.lpImages)
       .getPublicUrl(filePath);
       
     setEditingPage({...editingPage, hero_image_url: publicUrl});

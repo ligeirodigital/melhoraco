@@ -11,6 +11,8 @@ export const FN_PREFIX = 'melhoraco-';
 export const BUCKETS = {
   businessAssets: 'melhoraco-business-assets',
   customerAssets: 'melhoraco-customer-assets',
+  lpImages: 'melhoraco-lp-images',
+  backups: 'melhoraco-backups',
 } as const;
 
 export const functionUrl = (name: string) => `${SUPABASE_URL}/functions/v1/${FN_PREFIX}${name}`;

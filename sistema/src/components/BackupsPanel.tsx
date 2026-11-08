@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
+import { supabase, FN_PREFIX, BUCKETS } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCcw, Play, HardDrive, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ export function BackupsPanel() {
     queryKey: ["backups-list"],
     queryFn: async () => {
       const { data, error } = await supabase.storage
-        .from("backups")
+        .from(BUCKETS.backups)
         .list("", { limit: 100, sortBy: { column: "created_at", order: "desc" } });
       if (error) throw error;
       return (data ?? []) as BackupFile[];
@@ -53,7 +53,7 @@ export function BackupsPanel() {
     setDownloadingName(name);
     try {
       const { data, error } = await supabase.storage
-        .from("backups")
+        .from(BUCKETS.backups)
         .createSignedUrl(name, 300);
       if (error) throw error;
       window.open(data.signedUrl, "_blank");

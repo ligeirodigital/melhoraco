@@ -39,8 +39,13 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const cronSecret = Deno.env.get("MELHORACO_CRON_SECRET") ?? "";
   const supabase = createClient(supabaseUrl, serviceKey, { db: { schema: "melhoraco" } });
+  // Segredo do cron: variável de ambiente ou tabela app_secrets (key = 'cron_secret').
+  let cronSecret = Deno.env.get("MELHORACO_CRON_SECRET") ?? "";
+  if (!cronSecret) {
+    const { data: sec } = await supabase.from("app_secrets").select("value").eq("key", "cron_secret").maybeSingle();
+    cronSecret = sec?.value ?? "";
+  }
 
   // Autorização: cron secret OU admin autenticado
   const providedCron = req.headers.get("x-cron-secret") ?? "";
@@ -97,17 +102,17 @@ serve(async (req) => {
     const filename = `backup_${stamp}.zip`;
 
     const { error: upErr } = await supabase.storage
-      .from("backups")
+      .from("melhoraco-backups")
       .upload(filename, zipBlob, { contentType: "application/zip", upsert: false });
     if (upErr) throw upErr;
 
     // Retenção: mantém os últimos KEEP_LAST arquivos
-    const { data: list } = await supabase.storage.from("backups").list("", { limit: 100 });
+    const { data: list } = await supabase.storage.from("melhoraco-backups").list("", { limit: 100 });
     if (list && list.length > KEEP_LAST) {
       const sorted = [...list].sort((a, b) => (a.created_at! < b.created_at! ? 1 : -1));
       const toDelete = sorted.slice(KEEP_LAST).map((f) => f.name);
       if (toDelete.length > 0) {
-        await supabase.storage.from("backups").remove(toDelete);
+        await supabase.storage.from("melhoraco-backups").remove(toDelete);
       }
     }
 
