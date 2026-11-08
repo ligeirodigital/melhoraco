@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Investor } from "@/types/finance";
+import { WithdrawalRequestsAdmin } from "./WithdrawalRequestsAdmin";
 
 export const InvestorModule = () => {
   const { investors, investorTransactions, investorProfitShares, investorProfitSharesByMonth } = useFinance(undefined, undefined, { withInvestorShares: true });
@@ -149,6 +150,12 @@ export const InvestorModule = () => {
           </Button>
         </div>
       </div>
+
+      <Card className="rounded-3xl sm:rounded-[2.5rem] border-slate-200/60 shadow-xl min-w-0">
+        <CardContent className="p-4 sm:p-8">
+          <WithdrawalRequestsAdmin />
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {investors.map(investor => {

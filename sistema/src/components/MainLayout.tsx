@@ -1,4 +1,7 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
+import { useAuth } from "@/hooks/useAuth";
+
+const InvestorSharesSync = lazy(() => import("@/components/financial/InvestorSharesSync"));
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,9 +13,15 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const isMobile = useIsMobile();
+  const { isAdmin } = useAuth();
 
   return (
     <div className="flex h-[100dvh] w-full max-w-[100vw] bg-[#FDFDFF] text-foreground overflow-hidden font-sans selection:bg-primary/10 selection:text-primary">
+      {isAdmin && (
+        <Suspense fallback={null}>
+          <InvestorSharesSync />
+        </Suspense>
+      )}
       {!isMobile && <Sidebar />}
       <main className="flex-1 flex flex-col min-w-0 relative overflow-hidden h-full">
         <div className={cn(

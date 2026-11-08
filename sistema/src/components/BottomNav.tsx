@@ -19,10 +19,10 @@ const tap = () => {
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, signOut } = useAuth();
+  const { isAdmin, isInvestor, signOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const perms = { isAdmin };
+  const perms = { isAdmin, isInvestor };
   const primary = getPrimaryNav(perms);
   const secondary = getSecondaryNav(perms);
   const activeId = resolveActiveSection(location.pathname, perms);

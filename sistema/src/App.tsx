@@ -30,6 +30,7 @@ const StoreOrdersPage = lazy(() => import("./pages/StoreOrdersPage"));
 const StoreAdminPage = lazy(() => import("./pages/StoreAdminPage"));
 const StoreTrackPage = lazy(() => import("./pages/StoreTrackPage"));
 const PaymentEventsPage = lazy(() => import("./pages/PaymentEventsPage"));
+const InvestorPanelPage = lazy(() => import("./pages/InvestorPanelPage"));
 
 
 import { Loader2 } from "lucide-react";
@@ -48,7 +49,7 @@ const queryClient = new QueryClient({
 });
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, isAllowed } = useAuth();
+  const { user, loading, isAllowed, isInvestor } = useAuth();
   const mounted = useMounted();
 
   if (!mounted || loading) {
@@ -61,7 +62,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!user) return <AuthPage />;
   
-  if (!isAllowed) {
+  if (!isAllowed && !isInvestor) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-2">Acesso Restrito</h2>
@@ -71,6 +72,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return <>{children}</>;
+};
+
+/** Investidor (sem ser administrador) cai direto no painel de comissão. */
+const HomeRoute = () => {
+  const { isAdmin, isInvestor } = useAuth();
+  if (isInvestor && !isAdmin) return <Navigate to="/investidor" replace />;
+  return <QuotesList />;
 };
 
 const App = () => (
@@ -106,7 +114,8 @@ const App = () => (
               <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
               <Route path="/production" element={<Navigate to="/" replace />} />
-              <Route path="/" element={<ProtectedRoute><QuotesList /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute><HomeRoute /></ProtectedRoute>} />
+              <Route path="/investidor" element={<ProtectedRoute><InvestorPanelPage /></ProtectedRoute>} />
               <Route path="/new" element={<ProtectedRoute><QuoteFormPage /></ProtectedRoute>} />
               <Route path="/quotes/:id" element={<ProtectedRoute><QuoteViewPage /></ProtectedRoute>} />
               <Route path="/dre" element={<ProtectedRoute><DREPage /></ProtectedRoute>} />

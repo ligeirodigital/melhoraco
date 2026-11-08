@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   isAllowed: boolean;
   isAdmin: boolean;
+  /** Login vinculado a um investidor (ex.: Thales); vê o painel "Minha comissão". */
+  isInvestor: boolean;
   profile: { name?: string; role?: string } | null;
   signOut: () => Promise<void>;
 }
@@ -19,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAllowed: false,
   isAdmin: false,
+  isInvestor: false,
   profile: null,
   signOut: async () => {},
 });
@@ -28,14 +31,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAllowed, setIsAllowed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isInvestor, setIsInvestor] = useState(false);
   const [profile, setProfile] = useState<{ name?: string; role?: string } | null>(null);
 
-  const checkAccess = async (email?: string) => {
+  const checkInvestor = async (userId?: string) => {
+    if (!userId) { setIsInvestor(false); return; }
+    try {
+      const { data } = await supabase.from('investors').select('id').eq('user_id', userId).maybeSingle();
+      setIsInvestor(!!data);
+    } catch {
+      setIsInvestor(false);
+    }
+  };
+
+  const checkAccess = async (email?: string, userId?: string) => {
     if (!email) {
       setIsAllowed(false);
       setIsAdmin(false);
+      setIsInvestor(false);
       return;
     }
+    await checkInvestor(userId);
     
     const normalizedEmail = email.toLowerCase().trim();
     
@@ -80,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isMounted) setSession(session);
         
         if (session?.user?.email) {
-          await checkAccess(session.user.email);
+          await checkAccess(session.user.email, session.user.id);
         }
       } catch (err) {
         console.error("Auth init exception:", err);
@@ -100,13 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user?.email) {
           setLoading(true);
           try {
-            await checkAccess(session.user.email);
+            await checkAccess(session.user.email, session.user.id);
           } finally {
             setLoading(false);
           }
         } else {
           setIsAllowed(false);
           setIsAdmin(false);
+          setIsInvestor(false);
           setLoading(false);
         }
       }
@@ -123,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setIsAllowed(false);
       setIsAdmin(false);
+      setIsInvestor(false);
       setProfile(null);
       setSession(null);
     } catch (error: any) {
@@ -132,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isAllowed, isAdmin, profile, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isAllowed, isAdmin, isInvestor, profile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
