@@ -84,7 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check current session first
     const initAuth = async () => {
       try {
-        console.log('Initializing auth session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -107,25 +106,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-      
-      if (isMounted) {
-        setSession(session);
-        
-        if (session?.user?.email) {
-          setLoading(true);
+    // Importante: não chamar o Supabase (await) dentro deste callback — a biblioteca segura uma trava
+    // durante o login e a consulta fica esperando para sempre. Por isso a checagem roda logo depois (setTimeout).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      setSession(session);
+
+      if (event === 'TOKEN_REFRESHED') return; // mesma pessoa, nada a checar de novo
+
+      if (session?.user?.email) {
+        const { email, id } = session.user;
+        setLoading(true);
+        setTimeout(async () => {
           try {
-            await checkAccess(session.user.email, session.user.id);
+            await checkAccess(email, id);
           } finally {
-            setLoading(false);
+            if (isMounted) setLoading(false);
           }
-        } else {
-          setIsAllowed(false);
-          setIsAdmin(false);
-          setIsInvestor(false);
-          setLoading(false);
-        }
+        }, 0);
+      } else {
+        setIsAllowed(false);
+        setIsAdmin(false);
+        setIsInvestor(false);
+        setLoading(false);
       }
     });
 
