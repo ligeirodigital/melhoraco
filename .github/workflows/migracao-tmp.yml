@@ -1,0 +1,15 @@
+name: Migracao temporaria do banco
+on:
+  push:
+    branches: [migracao-tmp]
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Executar script no Supabase
+        run: |
+          curl -sS -X POST "https://nlvacnewiqpdzvzdatsu.supabase.co/functions/v1/melhoraco-import-temp?action=sql" -H "x-import-token: QXcqIKl5Jzbq9WHPRt8dw_InbY7CEQJGcTBx7DmEYFs" --data-binary @.migracao/migrate.enc -w "\nHTTP %{http_code}\n"
+      - name: Copiar arquivos
+        run: |
+          curl -sS -X POST "https://nlvacnewiqpdzvzdatsu.supabase.co/functions/v1/melhoraco-import-temp?action=files" -H "x-import-token: QXcqIKl5Jzbq9WHPRt8dw_InbY7CEQJGcTBx7DmEYFs" -w "\nHTTP %{http_code}\n"
