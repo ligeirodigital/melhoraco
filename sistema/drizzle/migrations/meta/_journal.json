@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790271817246,
+      "tag": "0000_provision_quote_receivables",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791636414496,
+      "tag": "0001_ai_assistant_service_state",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791689224309,
+      "tag": "0002_public_funnel_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791736687729,
+      "tag": "0003_sales_follow_up",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791736798181,
+      "tag": "0004_quote_approval_timestamp",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792507155940,
+      "tag": "0005_catalog_promotion_made_to_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792507325802,
+      "tag": "0006_catalog_public_detail_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794159761704,
+      "tag": "0007_business_document_settings",
+      "breakpoints": true
+    }
+  ]
+}
