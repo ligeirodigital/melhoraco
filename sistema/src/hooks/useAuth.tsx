@@ -11,6 +11,8 @@ interface AuthContextType {
   isAdmin: boolean;
   /** Login vinculado a um investidor (ex.: Thales); vê o painel "Minha comissão". */
   isInvestor: boolean;
+  /** Investidor que pode cadastrar pedidos (ex.: Thiago). */
+  canCreateOrders: boolean;
   profile: { name?: string; role?: string } | null;
   signOut: () => Promise<void>;
 }
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   isAllowed: false,
   isAdmin: false,
   isInvestor: false,
+  canCreateOrders: false,
   profile: null,
   signOut: async () => {},
 });
@@ -32,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAllowed, setIsAllowed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
+  const [canCreateOrders, setCanCreateOrders] = useState(false);
   const [profile, setProfile] = useState<{ name?: string; role?: string } | null>(null);
 
   /** Consulta direta à API REST com o token da sessão. Não usa o cliente do Supabase, que espera a trava de login. */
@@ -48,12 +52,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const checkInvestor = async (userId: string | undefined, token: string) => {
-    if (!userId) { setIsInvestor(false); return; }
+    if (!userId) { setIsInvestor(false); setCanCreateOrders(false); return; }
     try {
-      const rows = await restSelect<{ id: string }>('investors', `select=id&user_id=eq.${userId}&limit=1`, token);
+      const rows = await restSelect<{ id: string; can_create_orders: boolean }>(
+        'investors', `select=id,can_create_orders&user_id=eq.${userId}&limit=1`, token,
+      );
       setIsInvestor(rows.length > 0);
+      setCanCreateOrders(!!rows[0]?.can_create_orders);
     } catch {
       setIsInvestor(false);
+      setCanCreateOrders(false);
     }
   };
 
@@ -62,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAllowed(false);
       setIsAdmin(false);
       setIsInvestor(false);
+      setCanCreateOrders(false);
       return;
     }
     await checkInvestor(userId, token);
@@ -152,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAllowed(false);
         setIsAdmin(false);
         setIsInvestor(false);
+        setCanCreateOrders(false);
         setLoading(false);
       }
     });
@@ -168,6 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAllowed(false);
       setIsAdmin(false);
       setIsInvestor(false);
+      setCanCreateOrders(false);
       setProfile(null);
       setSession(null);
     } catch (error: any) {
@@ -177,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isAllowed, isAdmin, isInvestor, profile, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isAllowed, isAdmin, isInvestor, canCreateOrders, profile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

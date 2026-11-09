@@ -15,3 +15,11 @@ describe("navegação do investidor", () => {
     expect(ids).not.toContain("comissao");
   });
 });
+
+describe("investidor que cadastra pedidos", () => {
+  it("vê Novo pedido primeiro, depois as abas de investidor", () => {
+    const perms = { isInvestor: true, isAdmin: false, canCreateOrders: true };
+    expect(getPrimaryNav(perms).map((i) => i.id)).toEqual(["novo", "comissao", "inv-vendas", "inv-dashboard"]);
+    expect(getPrimaryNav(perms)[0].path).toBe("/new");
+  });
+});

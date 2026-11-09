@@ -9,13 +9,13 @@ import { getSidebarNav, resolveActiveSection } from "@/lib/navigation";
 
 export const Sidebar = () => {
   const location = useLocation();
-  const { isAdmin, isInvestor } = useAuth();
+  const { isAdmin, isInvestor, canCreateOrders } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
-  const perms = { isAdmin, isInvestor };
+  const perms = { isAdmin, isInvestor, canCreateOrders };
   const navItems = getSidebarNav(perms);
   const activeId = resolveActiveSection(location.pathname, perms);
 

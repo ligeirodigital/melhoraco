@@ -51,12 +51,16 @@ export interface NavPermissions {
   isAdmin?: boolean;
   /** Login de investidor (sem ser administrador): navegação reduzida ao painel de comissão. */
   isInvestor?: boolean;
+  /** Investidor autorizado a cadastrar pedidos da empresa. */
+  canCreateOrders?: boolean;
 }
 
 const COMISSAO: NavItem = { id: "comissao", label: "Minha comissão", shortLabel: "Comissão", path: "/investidor", icon: Wallet };
 const INV_VENDAS: NavItem = { id: "inv-vendas", label: "Vendas", path: "/investidor/vendas", icon: ShoppingBag };
 const INV_DASHBOARD: NavItem = { id: "inv-dashboard", label: "Dashboard", path: "/investidor/dashboard", icon: LayoutDashboard };
+const INV_NOVO_PEDIDO: NavItem = { id: "novo", label: "Novo pedido", shortLabel: "Novo", path: "/new", icon: Plus };
 const INVESTOR_NAV: NavItem[] = [COMISSAO, INV_VENDAS, INV_DASHBOARD];
+const investorNav = (perms: NavPermissions) => (perms.canCreateOrders ? [INV_NOVO_PEDIDO, ...INVESTOR_NAV] : INVESTOR_NAV);
 const investorOnly = (perms: NavPermissions) => !!perms.isInvestor && !perms.isAdmin;
 
 /** Daily-use destinations. */
@@ -85,7 +89,7 @@ const allowed = (items: NavItem[], perms: NavPermissions) =>
 
 /** Destinations shown directly in the mobile bottom bar (max 4 + "Mais"). */
 export function getPrimaryNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return INVESTOR_NAV;
+  if (investorOnly(perms)) return investorNav(perms);
   return allowed(PRIMARY, perms);
 }
 
@@ -97,7 +101,7 @@ export function getSecondaryNav(perms: NavPermissions = {}): NavItem[] {
 
 /** Desktop sidebar: same information architecture, single list, no "Novo" (it has its own CTA). */
 export function getSidebarNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return INVESTOR_NAV;
+  if (investorOnly(perms)) return investorNav(perms);
   return [
     ...allowed(PRIMARY, perms).filter((i) => i.id !== "novo"),
     ...allowed(SECONDARY, perms),
