@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { ReceiptActions } from "@/components/quote/ReceiptActions";
 import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
@@ -1015,20 +1016,13 @@ const QuoteViewPage = () => {
                       </Button>
                     </LazyPdfButton>
 
-                    {(quote.down_payment_paid_at || quote.final_payment_paid_at) && (
-                      <LazyPdfButton
-                        fileName={`recibo-${quote.id.slice(0, 8)}.pdf`}
-                        className="w-full"
-                        documentFactory={async () => {
-                          const { ReceiptPDF } = await import("@/components/ReceiptPDF");
-                          return <ReceiptPDF quote={quote} logoUrl={companyLogo} signatureUrl={signatureUrl} type={quote.final_payment_paid_at ? "full" : "down_payment"} />;
-                        }}
-                      >
-                        <Button asChild variant="outline" className="w-full h-15 py-7 rounded-2xl gap-4 font-black border-emerald-100 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 transition-all group">
-                          <span><Printer className="w-6 h-6 group-hover:rotate-12 transition-transform" /> Emitir Recibo {quote.final_payment_paid_at ? "Total" : "Parcial"}</span>
-                        </Button>
-                      </LazyPdfButton>
-                    )}
+                    <ReceiptActions
+                      quote={quote}
+                      logoUrl={companyLogo}
+                      signatureUrl={signatureUrl}
+                      documentSettings={settings.data?.document_settings}
+                      onGoToPayment={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    />
                   </motion.div>
                 )}
 
