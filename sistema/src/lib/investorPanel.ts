@@ -40,7 +40,7 @@ export interface InvestorPanel {
 }
 
 // As funções RPC abaixo são novas e ainda não estão nos tipos gerados.
-const rpc = supabase.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+const rpc = supabase.rpc.bind(supabase) as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
 
 export async function fetchMyInvestorPanel(): Promise<InvestorPanel | null> {
   const { data, error } = await rpc("get_my_investor_panel");
