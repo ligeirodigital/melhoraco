@@ -31,6 +31,8 @@ const StoreAdminPage = lazy(() => import("./pages/StoreAdminPage"));
 const StoreTrackPage = lazy(() => import("./pages/StoreTrackPage"));
 const PaymentEventsPage = lazy(() => import("./pages/PaymentEventsPage"));
 const InvestorPanelPage = lazy(() => import("./pages/InvestorPanelPage"));
+const InvestorSalesPage = lazy(() => import("./pages/InvestorSalesPage"));
+const InvestorDashboardPage = lazy(() => import("./pages/InvestorDashboardPage"));
 
 
 import { Loader2 } from "lucide-react";
@@ -116,6 +118,8 @@ const App = () => (
               <Route path="/production" element={<Navigate to="/" replace />} />
               <Route path="/" element={<ProtectedRoute><HomeRoute /></ProtectedRoute>} />
               <Route path="/investidor" element={<ProtectedRoute><InvestorPanelPage /></ProtectedRoute>} />
+              <Route path="/investidor/vendas" element={<ProtectedRoute><InvestorSalesPage /></ProtectedRoute>} />
+              <Route path="/investidor/dashboard" element={<ProtectedRoute><InvestorDashboardPage /></ProtectedRoute>} />
               <Route path="/new" element={<ProtectedRoute><QuoteFormPage /></ProtectedRoute>} />
               <Route path="/quotes/:id" element={<ProtectedRoute><QuoteViewPage /></ProtectedRoute>} />
               <Route path="/dre" element={<ProtectedRoute><DREPage /></ProtectedRoute>} />

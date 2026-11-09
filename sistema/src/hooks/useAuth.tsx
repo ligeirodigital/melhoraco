@@ -90,14 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /** Se a checagem travar, libera a tela com o acesso negado em vez de girar para sempre. */
-  const checkAccessWithTimeout = (email: string, userId: string, token: string) =>
-    Promise.race([
-      checkAccess(email, userId, token),
-      new Promise<void>((resolve) => setTimeout(() => {
+  const checkAccessWithTimeout = (email: string, userId: string, token: string) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<void>((resolve) => {
+      timer = setTimeout(() => {
         console.error('Checagem de acesso demorou demais');
         resolve();
-      }, 10000)),
-    ]);
+      }, 10000);
+    });
+    return Promise.race([checkAccess(email, userId, token), timeout]).finally(() => clearTimeout(timer));
+  };
 
   useEffect(() => {
     let isMounted = true;

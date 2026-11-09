@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getPrimaryNav, getSecondaryNav, getSidebarNav } from "./navigation";
 
 describe("navegação do investidor", () => {
-  it("investidor sem ser admin vê só Minha comissão", () => {
+  it("investidor sem ser admin vê Minha comissão, Vendas e Dashboard", () => {
     const perms = { isInvestor: true, isAdmin: false };
-    expect(getPrimaryNav(perms).map((i) => i.id)).toEqual(["comissao"]);
+    expect(getPrimaryNav(perms).map((i) => i.id)).toEqual(["comissao", "inv-vendas", "inv-dashboard"]);
     expect(getSecondaryNav(perms)).toEqual([]);
-    expect(getSidebarNav(perms).map((i) => i.path)).toEqual(["/investidor"]);
+    expect(getSidebarNav(perms).map((i) => i.path)).toEqual(["/investidor", "/investidor/vendas", "/investidor/dashboard"]);
   });
 
   it("administrador mantém a navegação completa", () => {

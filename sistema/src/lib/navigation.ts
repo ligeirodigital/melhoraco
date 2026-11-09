@@ -13,6 +13,7 @@ import {
   Activity,
   Receipt,
   Wallet,
+  ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,7 +31,9 @@ export type NavSectionId =
   | "pagamentos"
   | "diagnosticos"
   | "ajustes"
-  | "comissao";
+  | "comissao"
+  | "inv-vendas"
+  | "inv-dashboard";
 
 export interface NavItem {
   id: NavSectionId;
@@ -51,7 +54,9 @@ export interface NavPermissions {
 }
 
 const COMISSAO: NavItem = { id: "comissao", label: "Minha comissão", shortLabel: "Comissão", path: "/investidor", icon: Wallet };
-const LOJA_PUBLICA: NavItem = { id: "loja", label: "Loja", path: "/loja", icon: Store };
+const INV_VENDAS: NavItem = { id: "inv-vendas", label: "Vendas", path: "/investidor/vendas", icon: ShoppingBag };
+const INV_DASHBOARD: NavItem = { id: "inv-dashboard", label: "Dashboard", path: "/investidor/dashboard", icon: LayoutDashboard };
+const INVESTOR_NAV: NavItem[] = [COMISSAO, INV_VENDAS, INV_DASHBOARD];
 const investorOnly = (perms: NavPermissions) => !!perms.isInvestor && !perms.isAdmin;
 
 /** Daily-use destinations. */
@@ -80,7 +85,7 @@ const allowed = (items: NavItem[], perms: NavPermissions) =>
 
 /** Destinations shown directly in the mobile bottom bar (max 4 + "Mais"). */
 export function getPrimaryNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return [COMISSAO];
+  if (investorOnly(perms)) return INVESTOR_NAV;
   return allowed(PRIMARY, perms);
 }
 
@@ -92,7 +97,7 @@ export function getSecondaryNav(perms: NavPermissions = {}): NavItem[] {
 
 /** Desktop sidebar: same information architecture, single list, no "Novo" (it has its own CTA). */
 export function getSidebarNav(perms: NavPermissions = {}): NavItem[] {
-  if (investorOnly(perms)) return [COMISSAO];
+  if (investorOnly(perms)) return INVESTOR_NAV;
   return [
     ...allowed(PRIMARY, perms).filter((i) => i.id !== "novo"),
     ...allowed(SECONDARY, perms),
