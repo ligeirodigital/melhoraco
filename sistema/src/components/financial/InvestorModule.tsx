@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Investor } from "@/types/finance";
 import { WithdrawalRequestsAdmin } from "./WithdrawalRequestsAdmin";
+import { confirmAction } from "@/lib/confirmAction";
 
 export const InvestorModule = () => {
   const { investors, investorTransactions, investorProfitShares, investorProfitSharesByMonth } = useFinance(undefined, undefined, { withInvestorShares: true });
@@ -85,7 +86,7 @@ export const InvestorModule = () => {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (confirm("Deseja realmente excluir este lançamento?")) {
+    if (await confirmAction({ title: "Excluir este lançamento?", confirmLabel: "Excluir", destructive: true })) {
       await mutations.removeInvestorTransaction.mutateAsync(id);
     }
   };
@@ -129,7 +130,7 @@ export const InvestorModule = () => {
       return;
     }
 
-    if (confirm("Deseja realmente excluir este investidor?")) {
+    if (await confirmAction({ title: "Excluir este investidor?", description: "O acesso e o histórico dele deixam de aparecer.", confirmLabel: "Excluir", destructive: true })) {
       await mutations.removeInvestor.mutateAsync(id);
     }
   };

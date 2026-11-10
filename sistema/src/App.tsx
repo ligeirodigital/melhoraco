@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ConfirmHost } from "@/components/ui/ConfirmHost";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -89,6 +90,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <Sonner position="top-right" />
+        <ConfirmHost />
         <BrowserRouter basename={BASE_PATH}>
           <PublicTracking />
           <Suspense fallback={

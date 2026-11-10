@@ -35,7 +35,13 @@ describe("navigation model", () => {
 
   it("shows admin modules to admins", () => {
     const ids = getSecondaryNav({ isAdmin: true }).map((i) => i.id);
-    expect(ids).toEqual(expect.arrayContaining(["loja-admin", "diagnosticos", "pagamentos"]));
+    expect(ids).toEqual(expect.arrayContaining(["loja-admin"]));
+  });
+
+  it("keeps payment diagnostics out of the main menu (they live in Ajustes)", () => {
+    const ids = getSecondaryNav({ isAdmin: true }).map((i) => i.id);
+    expect(ids).not.toContain("diagnosticos");
+    expect(ids).not.toContain("pagamentos");
   });
 
   it("does not duplicate items between bottom bar and Mais", () => {
@@ -80,11 +86,11 @@ describe("BottomNav", () => {
     expect(screen.queryByRole("link", { name: "Diagnósticos" })).toBeNull();
   });
 
-  it("gives admins the administrative modules inside Mais", () => {
+  it("gives admins the store admin inside Mais, without payment diagnostics", () => {
     authState.isAdmin = true;
     renderNav("/dashboard");
     fireEvent.click(screen.getByRole("button", { name: "Mais módulos" }));
-    expect(screen.getByRole("link", { name: "Diagnósticos" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Diagnósticos" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Admin da loja" })).toBeInTheDocument();
     authState.isAdmin = false;
   });

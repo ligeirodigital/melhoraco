@@ -39,6 +39,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
 import { getBoletoPlan } from "@/lib/receivables";
+import { confirmAction } from "@/lib/confirmAction";
 
 const containerVariants: any = {
   hidden: { opacity: 0 },
@@ -125,15 +126,10 @@ const QuoteViewPage = () => {
 
   const handleCheckPayment = async (manual = false, silent = false) => {
     if (!id || checkingPayment) return;
-    let receiptUrl: string | null = null;
-    if (manual) {
-      receiptUrl = window.prompt("Cole o link do comprovante (opcional):") || null;
-      if (!window.confirm("Confirmar recebimento manualmente? Isso marca o orçamento como PAGO.")) return;
-    }
     setCheckingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-check-payment`, {
-        body: { quoteId: id, manual, receiptUrl },
+        body: { quoteId: id, manual: false, receiptUrl: null },
       });
       if (error) throw error;
       await reloadTx();
@@ -141,8 +137,8 @@ const QuoteViewPage = () => {
       const result = data?.status === "paid" ? "paid" : "pending";
       setLastCheck({ at: new Date(), result, source: data?.source });
       if (!silent) {
-        if (result === "paid") toast.success(manual ? "Pagamento confirmado manualmente!" : "Pagamento confirmado!");
-        else toast.info("Ainda pendente. Se o cliente já pagou, use 'Confirmar manualmente'.");
+        if (result === "paid") toast.success("Pagamento confirmado!");
+        else toast.info("Ainda pendente. Se o cliente já pagou, registre o pagamento na seção Pagamentos.");
       }
     } catch (e: any) {
       setLastCheck({ at: new Date(), result: "error", message: e.message });
@@ -632,15 +628,6 @@ const QuoteViewPage = () => {
                       >
                         {checkingPayment ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                         Verificar status
-                      </Button>
-                      <Button
-                        onClick={() => handleCheckPayment(true)}
-                        disabled={checkingPayment}
-                        variant="outline"
-                        className="h-14 rounded-2xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-black"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Confirmar manualmente
                       </Button>
                     </div>
                   )}
