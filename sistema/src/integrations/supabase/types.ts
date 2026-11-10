@@ -1334,6 +1334,7 @@ export type Database = {
           delivery_address: string
           delivery_confirmed_at: string | null
           delivery_fee: number
+          free_shipping: boolean
           delivery_required: boolean | null
           delivery_type: string | null
           delivery_value: number | null
@@ -1400,6 +1401,7 @@ export type Database = {
           delivery_address?: string
           delivery_confirmed_at?: string | null
           delivery_fee?: number
+          free_shipping?: boolean
           delivery_required?: boolean | null
           delivery_type?: string | null
           delivery_value?: number | null
@@ -1466,6 +1468,7 @@ export type Database = {
           delivery_address?: string
           delivery_confirmed_at?: string | null
           delivery_fee?: number
+          free_shipping?: boolean
           delivery_required?: boolean | null
           delivery_type?: string | null
           delivery_value?: number | null

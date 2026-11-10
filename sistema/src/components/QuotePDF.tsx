@@ -86,7 +86,13 @@ export const QuotePDF = ({
 
         <View style={{ marginTop: 10, marginBottom: 14 }}>
           <View style={doc.row}><Text style={doc.label}>Subtotal dos itens</Text><Text style={doc.value}>{formatCurrency(subtotal)}</Text></View>
-          {quote.delivery_fee > 0 && <View style={doc.row}><Text style={doc.label}>Entrega</Text><Text style={doc.value}>{formatCurrency(quote.delivery_fee)}</Text></View>}
+          {quote.free_shipping && quote.delivery_fee > 0 && (
+            <View style={doc.row}>
+              <Text style={doc.label}>Entrega</Text>
+              <Text style={doc.value}><Text style={{ textDecoration: 'line-through', color: DOC.muted, fontFamily: 'Helvetica' }}>{formatCurrency(quote.delivery_fee)}</Text>{'  '}Grátis</Text>
+            </View>
+          )}
+          {!quote.free_shipping && quote.delivery_fee > 0 && <View style={doc.row}><Text style={doc.label}>Entrega</Text><Text style={doc.value}>{formatCurrency(quote.delivery_fee)}</Text></View>}
           {quote.installation_fee > 0 && <View style={doc.row}><Text style={doc.label}>Instalação</Text><Text style={doc.value}>{formatCurrency(quote.installation_fee)}</Text></View>}
           {globalDiscount > 0 && <View style={doc.row}><Text style={[doc.label, { color: '#dc2626' }]}>Desconto{discountType === 'percent' ? ` (${discountValue}%)` : ''}</Text><Text style={[doc.value, { color: '#dc2626' }]}>-{formatCurrency(globalDiscount)}</Text></View>}
         </View>

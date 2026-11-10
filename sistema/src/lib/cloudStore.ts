@@ -469,6 +469,7 @@ export async function saveFullQuote(
     id?: string;
     clientId: string;
     deliveryFee: number;
+    freeShipping?: boolean;
     deliveryRequired?: boolean;
     installationFee: number;
     installationRequired?: boolean;
@@ -501,6 +502,7 @@ export async function saveFullQuote(
       .update({
         client_id: data.clientId,
         delivery_fee: data.deliveryFee,
+        free_shipping: data.freeShipping ?? false,
         delivery_required: data.deliveryRequired ?? (data.deliveryFee > 0),
         installation_fee: data.installationFee,
         installation_required: data.installationRequired ?? (data.installationFee > 0),
@@ -536,6 +538,7 @@ export async function saveFullQuote(
         source: "manual",
         lead_origin: data.leadOrigin || null,
         delivery_fee: data.deliveryFee,
+        free_shipping: data.freeShipping ?? false,
         delivery_required: data.deliveryRequired ?? (data.deliveryFee > 0),
         installation_fee: data.installationFee,
         installation_required: data.installationRequired ?? (data.installationFee > 0),
