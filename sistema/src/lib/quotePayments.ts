@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { roundMoney } from "@/lib/quoteCalculations";
+import { computeQuoteTotals, roundMoney } from "@/lib/quoteCalculations";
 
 /** Pagamento registrado em um pedido (uma linha por valor recebido). */
 export type PaymentKind = "sinal" | "parcial" | "saldo";
@@ -74,4 +74,34 @@ export function receivedUpTo(payments: QuotePayment[], payment: QuotePayment): n
     if (p.id === payment.id) break;
   }
   return roundMoney(acc);
+}
+
+/**
+ * Espelha os botões de "recebido" (sinal, saldo, quitação) nos lançamentos.
+ * Marcar cria o lançamento do tipo, se ainda não existir; desmarcar remove os lançamentos do tipo.
+ * O saldo considera o que já foi recebido em outros lançamentos (sinal e parciais).
+ */
+export async function syncLedgerKind(quoteId: string, kind: "sinal" | "saldo", paidAt: string | null): Promise<void> {
+  if (!paidAt) {
+    const { error } = await table().delete().eq("quote_id", quoteId).eq("kind", kind);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const existing = await fetchQuotePayments(quoteId);
+  if (existing.some((p) => p.kind === kind)) return;
+
+  const { data: quote, error: quoteError } = await (supabase as any)
+    .from("quotes")
+    .select("*, quote_items(*)")
+    .eq("id", quoteId)
+    .single();
+  if (quoteError) throw new Error(quoteError.message);
+
+  const totals = computeQuoteTotals({ ...quote, items: quote.quote_items } as any);
+  const others = existing.filter((p) => p.kind !== "saldo").reduce((acc, p) => acc + Number(p.amount), 0);
+  const amount = kind === "sinal" ? totals.downPayment : Math.max(0, roundMoney(totals.total - others));
+  if (amount <= 0) return;
+
+  await createQuotePayment({ quoteId, kind, amount, paidAt, method: null });
 }

@@ -1,5 +1,6 @@
 export { supabase } from "@/integrations/supabase/client";
 import { supabase } from "@/integrations/supabase/client";
+import { syncLedgerKind } from "@/lib/quotePayments";
 
 export interface AllowedEmail {
   email: string;
@@ -392,6 +393,7 @@ export async function updateQuotePartialPayment(
     .update({ [field]: value } as any)
     .eq("id", quoteId);
   if (error) throw error;
+  await syncLedgerKind(quoteId, field === "down_payment_paid_at" ? "sinal" : "saldo", value);
 }
 
 export async function updateQuoteFullPayment(quoteId: string, value: string | null) {
@@ -405,6 +407,8 @@ export async function updateQuoteFullPayment(quoteId: string, value: string | nu
     } as any)
     .eq("id", quoteId);
   if (error) throw error;
+  await syncLedgerKind(quoteId, "sinal", value);
+  await syncLedgerKind(quoteId, "saldo", value);
 }
 
 export async function updateQuoteStatus(quoteId: string, status: QuoteStatus) {
