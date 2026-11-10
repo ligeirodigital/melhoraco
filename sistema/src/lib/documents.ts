@@ -46,7 +46,7 @@ export function documentFooter(s: DocumentSettings): string {
 
 // ---------------- Receipts ----------------
 
-export type ReceiptType = "down_payment" | "remaining_balance" | "full";
+export type ReceiptType = "down_payment" | "remaining_balance" | "full" | "partial";
 
 type ReceiptQuote = QuoteLike & {
   id: string;
@@ -59,6 +59,7 @@ export const RECEIPT_META: Record<ReceiptType, { title: string; suffix: string; 
   down_payment: { title: "Recibo parcial", suffix: "S", button: "Recibo parcial do sinal", short: "sinal" },
   remaining_balance: { title: "Recibo parcial", suffix: "R", button: "Recibo parcial do saldo", short: "saldo restante" },
   full: { title: "Recibo de quitação", suffix: "Q", button: "Recibo total (quitação)", short: "quitação" },
+  partial: { title: "Recibo parcial", suffix: "P", button: "Recibo parcial", short: "parcial" },
 };
 
 /** Which receipt buttons the quote screen should show. */
@@ -66,11 +67,13 @@ export function availableReceipts(quote: { down_payment?: number | string | null
   return Number(quote?.down_payment) > 0 ? ["down_payment", "remaining_balance", "full"] : ["full"];
 }
 
-export function receiptNumber(quoteId: string, type: ReceiptType): string {
-  return `#${quoteId.slice(0, 8).toUpperCase()}-${RECEIPT_META[type].suffix}`;
+export function receiptNumber(quoteId: string, type: ReceiptType, seq?: number): string {
+  const suffix = type === "partial" && seq ? `P${seq}` : RECEIPT_META[type].suffix;
+  return `#${quoteId.slice(0, 8).toUpperCase()}-${suffix}`;
 }
 
-export function receiptAmount(quote: ReceiptQuote, type: ReceiptType): number {
+export function receiptAmount(quote: ReceiptQuote, type: ReceiptType, payment?: { amount: number }): number {
+  if (type === "partial") return Number(payment?.amount) || 0;
   const t = computeQuoteTotals(quote);
   if (type === "down_payment") return t.downPayment;
   if (type === "remaining_balance") return t.remainingBalance;
@@ -88,7 +91,7 @@ export function receiptPaidAt(quote: ReceiptQuote, type: ReceiptType): string | 
 
 /** Warning shown before generating a receipt whose payment is not registered yet. */
 export function receiptWarning(quote: ReceiptQuote, type: ReceiptType): string | null {
-  if (receiptPaidAt(quote, type)) return null;
+  if (type === "partial" || receiptPaidAt(quote, type)) return null;
   if (type === "down_payment") return "O sinal ainda não foi registrado como pago";
   if (type === "remaining_balance") return "O saldo ainda não foi registrado como pago";
   return "A quitação ainda não foi registrada como paga";
@@ -114,9 +117,15 @@ export function paymentMethodLabel(raw?: string | null): string | null {
   return raw;
 }
 
-export function receiptWhatsAppText(quote: ReceiptQuote & { client?: { name?: string | null } | null }, type: ReceiptType, fmt: (n: number) => string): string {
+export function receiptWhatsAppText(
+  quote: ReceiptQuote & { client?: { name?: string | null } | null },
+  type: ReceiptType,
+  fmt: (n: number) => string,
+  payment?: { amount: number },
+  seq?: number,
+): string {
   const name = quote.client?.name?.split(" ")[0];
-  return `Olá${name ? `, ${name}` : ""}! Segue o ${RECEIPT_META[type].title.toLowerCase()} ${receiptNumber(quote.id, type)} no valor de ${fmt(receiptAmount(quote, type))}. Obrigado pela preferência!`;
+  return `Olá${name ? `, ${name}` : ""}! Segue o ${RECEIPT_META[type].title.toLowerCase()} ${receiptNumber(quote.id, type, seq)} no valor de ${fmt(receiptAmount(quote, type, payment))}. Obrigado pela preferência!`;
 }
 
 // ---------------- Valor por extenso ----------------

@@ -2,6 +2,7 @@ import { Page, Text, View, Document, Image } from '@react-pdf/renderer';
 import { FullQuote } from '../lib/cloudStore';
 import { formatCurrency } from '../lib/formatQuote';
 import { calcSubtotal, computeQuoteTotals, resolveItemName, roundMoney } from '../lib/quoteCalculations';
+import { PAYMENT_KIND_LABEL, receivedUpTo, type QuotePayment } from '../lib/quotePayments';
 import {
   RECEIPT_META, amountInWords, paymentMethodLabel, receiptAmount, receiptNumber,
   resolveDocumentSettings, type ReceiptType,
@@ -21,27 +22,40 @@ export const ReceiptPDF = ({
   signatureUrl,
   type = 'full',
   documentSettings,
+  payment,
+  payments = [],
+  seq,
 }: {
   quote: FullQuote,
   logoUrl?: string,
   signatureUrl?: string,
   type?: ReceiptType,
   documentSettings?: unknown,
+  /** Pagamento específico (recibo parcial). */
+  payment?: QuotePayment,
+  /** Todos os pagamentos do pedido (listados na quitação). */
+  payments?: QuotePayment[],
+  /** Número sequencial do recibo parcial (P1, P2…). */
+  seq?: number,
 }) => {
   const settings = resolveDocumentSettings(documentSettings);
   const totals = computeQuoteTotals(quote as any);
-  const amount = receiptAmount(quote as any, type);
+  const amount = receiptAmount(quote as any, type, payment);
   const method = paymentMethodLabel(quote.payment_method_type);
   const meta = RECEIPT_META[type];
-  const number = receiptNumber(quote.id, type);
+  const number = receiptNumber(quote.id, type, seq);
   const orderId = quote.id.slice(0, 8).toUpperCase();
   const reference =
+    type === 'partial' ? `ao pagamento parcial de ${fmtDate(payment?.paid_at) || ''}`.trim() :
     type === 'down_payment' ? 'ao sinal (pagamento parcial)' :
     type === 'remaining_balance' ? 'ao saldo restante' : 'à quitação total';
   const paidAt =
+    type === 'partial' ? payment?.paid_at :
     type === 'down_payment' ? quote.down_payment_paid_at :
     type === 'remaining_balance' ? quote.final_payment_paid_at :
     quote.final_payment_paid_at || quote.payment_date;
+  const ledger = type !== 'partial' && payments.length > 0;
+  const receivedSoFar = payment ? receivedUpTo(payments, payment) : 0;
   const issued = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
   const delivery = quote.delivery_type === 'retirada' ? 'Retirada na fábrica' : quote.delivery_type === 'correios' ? 'Correios' : 'Entrega';
   const items = (quote.items || []).map((i: any) => {
@@ -99,12 +113,29 @@ export const ReceiptPDF = ({
 
           <View style={{ alignSelf: 'flex-end', width: 240, marginBottom: 16 }}>
             <View style={doc.row}><Text style={doc.label}>Total do pedido</Text><Text style={doc.value}>{formatCurrency(totals.total || subtotal)}</Text></View>
-            <View style={doc.row}><Text style={doc.label}>Sinal pago{fmtDate(quote.down_payment_paid_at) ? ` em ${fmtDate(quote.down_payment_paid_at)}` : ''}</Text><Text style={doc.value}>{formatCurrency(totals.downPayment)}</Text></View>
+            {type === 'partial' && payment && (
+              <>
+                <View style={doc.row}><Text style={doc.label}>Recebido até esta data</Text><Text style={doc.value}>{formatCurrency(receivedSoFar)}</Text></View>
+                <View style={doc.row}><Text style={doc.label}>Saldo restante</Text><Text style={doc.value}>{formatCurrency(Math.max(0, roundMoney(totals.total - receivedSoFar)))}</Text></View>
+              </>
+            )}
+            {ledger && payments.map((p, idx) => (
+              <View key={p.id} style={doc.row}>
+                <Text style={doc.label}>Recibo {idx + 1}: {PAYMENT_KIND_LABEL[p.kind]} · {fmtDate(p.paid_at)}</Text>
+                <Text style={doc.value}>{formatCurrency(p.amount)}</Text>
+              </View>
+            ))}
+            {type !== 'partial' && !ledger && type !== 'full' && (
+              <View style={doc.row}><Text style={doc.label}>Sinal pago{fmtDate(quote.down_payment_paid_at) ? ` em ${fmtDate(quote.down_payment_paid_at)}` : ''}</Text><Text style={doc.value}>{formatCurrency(totals.downPayment)}</Text></View>
+            )}
+            {type === 'full' && !ledger && (
+              <View style={doc.row}><Text style={doc.label}>Sinal pago{fmtDate(quote.down_payment_paid_at) ? ` em ${fmtDate(quote.down_payment_paid_at)}` : ''}</Text><Text style={doc.value}>{formatCurrency(totals.downPayment)}</Text></View>
+            )}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1.5, borderTopColor: DOC.ink, marginTop: 4, paddingTop: 6 }}>
-              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{type === 'full' ? 'Saldo recebido' : 'Valor deste recibo'}</Text>
-              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{formatCurrency(amount)}</Text>
+              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{type === 'full' ? (ledger ? 'Total recebido' : 'Saldo recebido') : 'Valor deste recibo'}</Text>
+              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{formatCurrency(ledger ? roundMoney(payments.reduce((acc, p) => acc + Number(p.amount), 0)) : amount)}</Text>
             </View>
-            {type !== 'full' && (
+            {type !== 'full' && !payment && (
               <View style={[doc.row, { marginTop: 4 }]}><Text style={doc.label}>Saldo restante{fmtDate(quote.final_payment_paid_at) ? ` (pago em ${fmtDate(quote.final_payment_paid_at)})` : ''}</Text><Text style={doc.value}>{formatCurrency(totals.remainingBalance)}</Text></View>
             )}
           </View>

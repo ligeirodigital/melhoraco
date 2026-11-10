@@ -24,13 +24,15 @@ interface RawSale {
   down_payment_paid_at: string | null;
   final_payment_paid_at: string | null;
   payment_date: string | null;
+  payments?: { kind: string; amount: number | string; paid_at: string }[] | null;
   items: InvestorSaleItem[];
 }
 
-export type SalePaymentState = "pago" | "sinal_pago" | "a_receber";
+export type SalePaymentState = "pago" | "parcial" | "sinal_pago" | "a_receber";
 
 export const SALE_PAYMENT_LABEL: Record<SalePaymentState, string> = {
   pago: "Pago",
+  parcial: "Pagamento parcial",
   sinal_pago: "Sinal pago",
   a_receber: "A receber",
 };
@@ -70,6 +72,24 @@ function groupItems(items: InvestorSaleItem[]): { name: string; quantity: number
 
 export function toInvestorSale(raw: RawSale): InvestorSale {
   const totals = computeQuoteTotals(raw as never);
+  const ledger = (raw.payments || []).map((p) => Number(p.amount) || 0);
+  if (ledger.length > 0) {
+    // Pagamentos registrados são a fonte da verdade quando existem.
+    const received = Math.min(totals.total, Math.round(ledger.reduce((a, b) => a + b, 0) * 100) / 100);
+    const paid = totals.total - received < 0.005;
+    const payment: SalePaymentState = paid ? "pago" : received > 0 ? "parcial" : "a_receber";
+    return {
+      id: raw.id,
+      date: raw.sale_date,
+      month: monthOf(raw.sale_date),
+      clientName: raw.client_name?.trim() || "Cliente",
+      items: groupItems(raw.items || []),
+      total: totals.total,
+      received,
+      toReceive: Math.max(0, Math.round((totals.total - received) * 100) / 100),
+      payment,
+    };
+  }
   const hasDown = totals.downPayment > 0;
   const fullyPaid =
     raw.payment_status === "paid" ||
