@@ -10,6 +10,7 @@ import { fetchInvestorSales, SALE_PAYMENT_LABEL, summarizeByMonth, type SalePaym
 
 const PAYMENT_STYLE: Record<SalePaymentState, string> = {
   pago: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  parcial: "bg-amber-50 text-amber-700 border-amber-200",
   sinal_pago: "bg-amber-50 text-amber-700 border-amber-200",
   a_receber: "bg-slate-100 text-slate-600 border-slate-200",
 };
@@ -86,7 +87,7 @@ export default function InvestorSalesPage() {
                     </ul>
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <span className={cn("rounded-full border px-3 py-1 text-xs font-bold", PAYMENT_STYLE[s.payment])}>{SALE_PAYMENT_LABEL[s.payment]}</span>
-                      {s.payment === "sinal_pago" && <span className="text-xs text-slate-500">Falta {formatBRL(s.toReceive)}</span>}
+                      {(s.payment === "sinal_pago" || s.payment === "parcial") && <span className="text-xs text-slate-500">Falta {formatBRL(s.toReceive)}</span>}
                     </div>
                   </CardContent>
                 </Card>

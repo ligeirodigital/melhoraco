@@ -40,6 +40,9 @@ export interface QuoteTotals {
   subtotal: number;
   shippingAmount: number;
   deliveryFee: number;
+  /** Frete antes do benefício (para mostrar riscado). */
+  deliveryFeeOriginal: number;
+  freeShipping: boolean;
   installationFee: number;
   discountType: DiscountType;
   /** Valor bruto informado: R$ quando fixed, % quando percent. */
@@ -66,6 +69,8 @@ export interface QuoteLikeItem {
 export interface QuoteLike {
   items?: QuoteLikeItem[] | null;
   delivery_fee?: number | null;
+  /** Frete grátis: o valor de delivery_fee é mostrado riscado e não entra no total. */
+  free_shipping?: boolean | null;
   installation_fee?: number | null;
   discount_type?: string | null;
   discount_amount?: number | null;
@@ -90,7 +95,9 @@ export function calcSubtotal(items: QuoteLikeItem[] | null | undefined): number 
 export function computeQuoteTotals(quote: QuoteLike | null | undefined): QuoteTotals {
   const items = quote?.items || [];
   const subtotal = calcSubtotal(items);
-  const deliveryFee = Math.max(0, roundMoney(num(quote?.delivery_fee)));
+  const deliveryFeeOriginal = Math.max(0, roundMoney(num(quote?.delivery_fee)));
+  const freeShipping = quote?.free_shipping === true;
+  const deliveryFee = freeShipping ? 0 : deliveryFeeOriginal;
   const installationFee = Math.max(0, roundMoney(num(quote?.installation_fee)));
   const shippingAmount = roundMoney(deliveryFee + installationFee);
 
@@ -138,6 +145,8 @@ export function computeQuoteTotals(quote: QuoteLike | null | undefined): QuoteTo
     subtotal,
     shippingAmount,
     deliveryFee,
+    deliveryFeeOriginal,
+    freeShipping,
     installationFee,
     discountType,
     discountValue,
@@ -220,13 +229,20 @@ export function groupDocumentItems(
     const unitDiscount = num(item.unit_discount);
     const unitDiscountType = normalizeDiscountType(item.unit_discount_type);
 
+    /**
+     * Dígitos de número (um caractere entre parênteses, ex.: "(6)" e "(0)") juntam
+     * na mesma linha do mesmo produto e preço: viram "60", com a quantidade somada.
+     * Demais variantes continuam separadas.
+     */
+    const isDigit = /^\d$/.test(detail);
     const key = [
       item.product_id ?? "",
       item.variant_id ?? "",
-      label,
+      isDigit ? mainName : label,
       unitPrice,
       unitDiscount,
       unitDiscountType,
+      isDigit ? "digito" : "",
     ].join("|");
 
     const existing = acc.find((g) => g._key === key);
@@ -235,6 +251,7 @@ export function groupDocumentItems(
       existing.quantity = roundMoney(existing.quantity + quantity);
       existing.totalPrice = roundMoney(existing.unitPrice * existing.quantity);
       existing.indices.push(index);
+      if (isDigit) existing.details.push(detail);
     } else {
       acc.push({
         _key: key,

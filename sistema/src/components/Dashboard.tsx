@@ -16,6 +16,7 @@ import { formatCurrency, getQuoteTotal } from "@/lib/formatQuote";
 import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, isSameYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SalesTargetWidget } from "@/components/SalesTargetWidget";
+import { saleDateOf, isNumberProduct } from "@/lib/saleDate";
 import { FollowUpQueue } from "@/components/sales/FollowUpQueue";
 import { UnpaidApprovedQuotes } from "@/components/sales/UnpaidApprovedQuotes";
 import {
@@ -78,16 +79,18 @@ export const Dashboard = () => {
 
 
 
+  // Vendas (aprovadas) no período, pela data da venda, a mesma usada na tela de investidores.
+  const salesInPeriod = useMemo(() => approvedQuotes.filter(q => {
+    const date = saleDateOf(q as any);
+    return date >= dateRange.start && date <= dateRange.end;
+  }), [approvedQuotes, dateRange]);
+
   const currentMonthSales = useMemo(() => {
-    return approvedQuotes
-      .filter(q => {
-        const date = new Date(q.created_at);
-        return date >= dateRange.start && date <= dateRange.end;
-      })
+    return salesInPeriod
       .reduce((acc, q) => {
         return acc + getQuoteTotal(q as any);
       }, 0);
-  }, [approvedQuotes, dateRange]);
+  }, [salesInPeriod]);
 
   const chartData = useMemo(() => {
     const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -101,7 +104,7 @@ export const Dashboard = () => {
       
       const monthlyTotal = approvedQuotes
         .filter(q => {
-          const qDate = new Date(q.created_at);
+          const qDate = saleDateOf(q as any);
           return qDate.getMonth() === m && qDate.getFullYear() === y;
         })
         .reduce((acc, q) => {
@@ -147,51 +150,25 @@ export const Dashboard = () => {
   }, [inventory.data, products.data]);
 
   const productStats = useMemo(() => {
-    const stats: Record<string, { name: string; sold: number; revenue: number; is_numerical?: boolean }> = {};
-    
-    approvedQuotes
-      .filter(q => {
-        const date = new Date(q.created_at);
-        return date >= dateRange.start && date <= dateRange.end;
-      })
-      .forEach(quote => {
-        quote.items.forEach(item => {
-          const isNumerical = /^\d+$/.test(item.product_name.trim());
-          const productId = item.product_id || item.product_name;
-          
-          if (!stats[productId]) {
-            stats[productId] = { 
-              name: item.product_name, 
-              sold: 0, 
-              revenue: 0,
-              is_numerical: isNumerical
-            };
-          }
-          stats[productId].sold += item.quantity;
-          stats[productId].revenue += item.unit_price * item.quantity;
-        });
+    const stats: Record<string, { name: string; sold: number; is_numerical: boolean }> = {};
+
+    salesInPeriod.forEach(quote => {
+      quote.items.forEach(item => {
+        const name = item.product_name || "Produto";
+        const productId = item.product_id || name;
+        if (!stats[productId]) {
+          stats[productId] = { name, sold: 0, is_numerical: isNumberProduct(name) };
+        }
+        stats[productId].sold += Number(item.quantity) || 0;
       });
+    });
 
     return Object.values(stats).sort((a, b) => b.sold - a.sold);
-  }, [approvedQuotes, dateRange]);
+  }, [salesInPeriod]);
 
-  const numericalProductStats = useMemo(() => {
-    return productStats
-      .filter(p => p.is_numerical)
-      .sort((a, b) => {
-        const numA = parseInt(a.name);
-        const numB = parseInt(b.name);
-        return numA - numB;
-      });
-  }, [productStats]);
-
+  // "Números vendidos" conta só os números de inox, não os demais produtos.
   const totalSoldNumbers = useMemo(() => {
-    return productStats.reduce((acc, p) => acc + p.sold, 0);
-  }, [productStats]);
-
-  const hiddenProductsCount = useMemo(() => {
-    // Only products that haven't been sold in the selected period AND are potentially least sold
-    return productStats.filter(p => p.sold === 0).length;
+    return productStats.filter(p => p.is_numerical).reduce((acc, p) => acc + p.sold, 0);
   }, [productStats]);
 
   if (quotes.isLoading || clients.isLoading || inventory.isLoading) {
@@ -257,10 +234,7 @@ export const Dashboard = () => {
       bg: "bg-indigo-50/50"
     },
     (() => {
-      const approvedInPeriod = approvedQuotes.filter(q => {
-        const d = new Date(q.created_at);
-        return d >= dateRange.start && d <= dateRange.end;
-      }).length;
+      const approvedInPeriod = salesInPeriod.length;
       const ticketMedio = approvedInPeriod > 0 ? currentMonthSales / approvedInPeriod : 0;
       return {
         title: "Ticket Médio",
@@ -271,10 +245,7 @@ export const Dashboard = () => {
       };
     })(),
     (() => {
-      const approvedInPeriod = approvedQuotes.filter(q => {
-        const d = new Date(q.created_at);
-        return d >= dateRange.start && d <= dateRange.end;
-      }).length;
+      const approvedInPeriod = salesInPeriod.length;
       const cac = approvedInPeriod > 0 ? (filteredDre.marketingExpenses || 0) / approvedInPeriod : 0;
       return {
         title: "CAC",
@@ -363,6 +334,11 @@ export const Dashboard = () => {
         </div>
       </motion.header>
 
+      {quotes.isError && (
+        <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700">
+          Não conseguimos carregar as vendas agora. Os números abaixo podem estar incompletos. Atualize a página para tentar de novo.
+        </div>
+      )}
       <FollowUpQueue quotes={quotes.data || []} stages={pipelineStages.data || []} loading={quotes.isLoading} />
       <UnpaidApprovedQuotes quotes={quotes.data || []} loading={quotes.isLoading} />
 

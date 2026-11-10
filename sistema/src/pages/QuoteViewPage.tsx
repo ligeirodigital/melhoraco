@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { ReceiptActions } from "@/components/quote/ReceiptActions";
+import { PaymentsCard } from "@/components/quote/PaymentsCard";
 import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
@@ -1015,6 +1016,8 @@ const QuoteViewPage = () => {
                         <span><ClipboardList className="w-6 h-6 text-orange-500 group-hover:scale-110 transition-transform" /> Ordem de Serviço (O.S)</span>
                       </Button>
                     </LazyPdfButton>
+
+                    <PaymentsCard quote={quote} />
 
                     <ReceiptActions
                       quote={quote}

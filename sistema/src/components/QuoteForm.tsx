@@ -334,6 +334,7 @@ export default function QuoteForm({
         clientId: client.id,
         leadOrigin,
         deliveryFee: Number(deliveryFee),
+        freeShipping: shouldWaiveDelivery,
         deliveryRequired: deliveryType !== "retirada",
         installationFee: needsInstallation ? Number(installationFee) : 0,
         installationRequired: needsInstallation,
