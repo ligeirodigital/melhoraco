@@ -229,13 +229,20 @@ export function groupDocumentItems(
     const unitDiscount = num(item.unit_discount);
     const unitDiscountType = normalizeDiscountType(item.unit_discount_type);
 
+    /**
+     * Dígitos de número (um caractere entre parênteses, ex.: "(6)" e "(0)") juntam
+     * na mesma linha do mesmo produto e preço: viram "60", com a quantidade somada.
+     * Demais variantes continuam separadas.
+     */
+    const isDigit = /^\d$/.test(detail);
     const key = [
       item.product_id ?? "",
       item.variant_id ?? "",
-      label,
+      isDigit ? mainName : label,
       unitPrice,
       unitDiscount,
       unitDiscountType,
+      isDigit ? "digito" : "",
     ].join("|");
 
     const existing = acc.find((g) => g._key === key);
@@ -244,6 +251,7 @@ export function groupDocumentItems(
       existing.quantity = roundMoney(existing.quantity + quantity);
       existing.totalPrice = roundMoney(existing.unitPrice * existing.quantity);
       existing.indices.push(index);
+      if (isDigit) existing.details.push(detail);
     } else {
       acc.push({
         _key: key,
