@@ -142,7 +142,7 @@ const QuoteViewPage = () => {
       setLastCheck({ at: new Date(), result, source: data?.source });
       if (!silent) {
         if (result === "paid") toast.success(manual ? "Pagamento confirmado manualmente!" : "Pagamento confirmado!");
-        else toast.info("Ainda pendente. Se o cliente já pagou, use 'Confirmar manualmente'.");
+        else toast.info("Ainda pendente. Se o cliente já pagou, registre o pagamento na seção Pagamentos.");
       }
     } catch (e: any) {
       setLastCheck({ at: new Date(), result: "error", message: e.message });
