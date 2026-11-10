@@ -50,6 +50,17 @@ export default function QuoteForm({
   const [addressComplement, setAddressComplement] = useState(initialData?.address_complement || initialData?.client?.address_complement || "");
   const [deadline, setDeadline] = useState(initialData?.deadline || "");
   const [deliveryType, setDeliveryType] = useState<"entrega" | "correios" | "retirada">(initialData?.delivery_type || "entrega");
+  const [step, setStep] = useState(0);
+  const STEP_NAMES = ["Cliente", "Produtos", "Entrega", "Pagamento", "Revisão"];
+  const PAYMENT_LABELS: Record<string, string> = {
+    avista_pedido: "À vista no pedido",
+    avista_entrega: "À vista na entrega ou retirada",
+    cartao_pedido: "Cartão no pedido",
+    cartao_entrega: "Cartão na entrega ou retirada",
+    sinal_entrega: "Sinal + restante na entrega",
+    sinal_retirada: "Sinal + restante na retirada",
+    boleto: "Boleto",
+  };
   const [deliveryFee, setDeliveryFee] = useState(initialData?.delivery_fee?.toString() || "0");
   const [addressCopied, setAddressCopied] = useState(false);
   const [needsInstallation, setNeedsInstallation] = useState(initialData?.installation_required || false);
@@ -408,6 +419,23 @@ export default function QuoteForm({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <div className="lg:col-span-2 space-y-6 sm:space-y-8 min-w-0">
+          <nav aria-label="Etapas do pedido" className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {STEP_NAMES.map((name, i) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setStep(i)}
+                aria-current={step === i ? "step" : undefined}
+                className={cn(
+                  "shrink-0 min-h-[44px] px-4 rounded-2xl border-2 text-sm font-black transition-all",
+                  step === i ? "border-primary bg-primary/5 text-primary" : "border-slate-100 text-slate-500 hover:border-slate-200"
+                )}
+              >
+                {i + 1}. {name}
+              </button>
+            ))}
+          </nav>
+          {step === 0 && (
           <section className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-6 sm:space-y-8">
 
             <div className="flex items-center gap-3 text-primary">
@@ -457,7 +485,9 @@ export default function QuoteForm({
 
             </div>
           </section>
+          )}
 
+          {step === 2 && (
           <section className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-6 sm:space-y-8">
             <div className="flex items-center gap-3 text-primary">
                <Truck className="w-6 h-6" />
@@ -472,7 +502,10 @@ export default function QuoteForm({
                        {(["entrega", "correios", "retirada"] as const).map(type => (
                          <button
                            key={type}
-                           onClick={() => setDeliveryType(type)}
+                           onClick={() => {
+                             setDeliveryType(type);
+                             if (paymentMethod.startsWith("sinal")) setPaymentMethod(type === "retirada" ? "sinal_retirada" : "sinal_entrega");
+                           }}
                            className={cn(
                              "py-2.5 rounded-xl text-[10px] font-black uppercase transition-all min-h-[44px]",
                              deliveryType === type ? "bg-white shadow-sm text-primary" : "text-slate-400"
@@ -483,6 +516,12 @@ export default function QuoteForm({
                        ))}
                     </div>
                   </div>
+
+                  {shouldWaiveDelivery && (
+                    <p role="status" className="text-xs font-bold text-emerald-700 bg-emerald-50 rounded-xl px-3 py-2">
+                      {deliveryType === "retirada" ? "Frete grátis: retirada na fábrica." : "Frete grátis em Fortaleza com pagamento no pedido."}
+                    </p>
+                  )}
 
                   {deliveryType !== "retirada" && (
                     <div className="space-y-2 animate-in slide-in-from-top-2">
@@ -638,45 +677,74 @@ export default function QuoteForm({
                </div>
             </div>
           </section>
+          )}
 
+          {step === 3 && (
           <section className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-6 sm:space-y-8">
             <div className="flex items-center gap-3 text-primary">
                <CreditCard className="w-6 h-6" />
                <h2 className="text-lg sm:text-xl font-black tracking-tight">Opções de Pagamento</h2>
             </div>
             
-            <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))" }}>
-              {[
-                { id: "avista_pedido", label: "À vista no pedido", delivery: "Fortaleza: Grátis" },
-                { id: "avista_entrega", label: "À vista na entrega", delivery: "Frete normal" },
-                { id: "cartao_pedido", label: `Cartão ${installments}x sem juros (no pedido)`, delivery: "Fortaleza: Grátis" },
-                { id: "cartao_entrega", label: `Cartão ${installments}x sem juros (na entrega)`, delivery: "Frete normal" },
-                { id: "retirada", label: "Retirada na Fábrica", delivery: "Sem frete" },
-                { id: "sinal_entrega", label: "Sinal no pedido + Restante na entrega", delivery: "Frete normal" },
-                { id: "sinal_retirada", label: "Sinal no pedido + Restante na retirada", delivery: "Sem frete" },
-                { id: "boleto", label: boletoInstallments > 1 ? `Boleto ${boletoInstallments}x (a cada ${boletoDays}d)` : `Boleto (${boletoDays} dias)`, delivery: "Faturado para revendedor" },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => {
-                    setPaymentMethod(opt.id);
-                    if (opt.id === "retirada" || opt.id === "sinal_retirada") {
-                      setDeliveryType("retirada");
-                    } else {
-                      if (deliveryType === "retirada") setDeliveryType("entrega");
-                    }
-                  }}
-                  className={cn(
-                    "p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1 min-h-[44px] active:scale-[0.98]",
-                    paymentMethod === opt.id ? "border-primary bg-primary/5 shadow-md" : "border-slate-100 hover:border-slate-200"
+            {(() => {
+              const payKind = paymentMethod.startsWith("cartao") ? "cartao"
+                : paymentMethod.startsWith("sinal") ? "sinal"
+                : paymentMethod === "boleto" ? "boleto" : "avista";
+              const payWhen = paymentMethod.endsWith("_pedido") ? "pedido" : "entrega";
+              const choose = (kind: string, when: string) => {
+                if (kind === "sinal") setPaymentMethod(deliveryType === "retirada" ? "sinal_retirada" : "sinal_entrega");
+                else if (kind === "boleto") setPaymentMethod("boleto");
+                else setPaymentMethod(`${kind}_${when}`);
+              };
+              const kinds = [
+                { id: "avista", label: "À vista" },
+                { id: "cartao", label: `Cartão ${installments}x sem juros` },
+                { id: "sinal", label: "Sinal + restante" },
+                { id: "boleto", label: boletoInstallments > 1 ? `Boleto ${boletoInstallments}x` : `Boleto (${boletoDays} dias)` },
+              ];
+              const btn = (active: boolean) => cn(
+                "p-4 rounded-2xl border-2 text-left transition-all min-h-[44px] active:scale-[0.98]",
+                active ? "border-primary bg-primary/5 shadow-md" : "border-slate-100 hover:border-slate-200"
+              );
+              return (
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="label-caps">Forma de pagamento</label>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      {kinds.map((k) => (
+                        <button key={k.id} type="button" onClick={() => choose(k.id, payWhen)} className={btn(payKind === k.id)} aria-pressed={payKind === k.id}>
+                          <span className={cn("font-black text-sm", payKind === k.id ? "text-primary" : "text-slate-700")}>{k.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {payKind === "sinal" && (
+                    <p className="text-xs font-bold text-slate-500">Sinal no pedido e o restante {deliveryType === "retirada" ? "na retirada" : "na entrega"}.</p>
                   )}
-                >
-                  <span className={cn("font-black text-sm", paymentMethod === opt.id ? "text-primary" : "text-slate-700")}>{opt.label}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{opt.delivery}</span>
-                </button>
-              ))}
-            </div>
+
+                  {(payKind === "avista" || payKind === "cartao") && (
+                    <div className="space-y-2">
+                      <label className="label-caps">Quando o cliente paga</label>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                        <button type="button" onClick={() => choose(payKind, "pedido")} aria-pressed={payWhen === "pedido"} className={btn(payWhen === "pedido")}>
+                          <span className={cn("font-black text-sm block", payWhen === "pedido" ? "text-primary" : "text-slate-700")}>No pedido</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isFortaleza ? "Fortaleza: frete grátis" : "Frete grátis só em Fortaleza"}</span>
+                        </button>
+                        <button type="button" onClick={() => choose(payKind, "entrega")} aria-pressed={payWhen === "entrega"} className={btn(payWhen === "entrega")}>
+                          <span className={cn("font-black text-sm block", payWhen === "entrega" ? "text-primary" : "text-slate-700")}>Na {deliveryType === "retirada" ? "retirada" : "entrega"}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Frete normal</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {payKind === "boleto" && (
+                    <p className="text-xs font-bold text-slate-500">Faturado para revendedor.</p>
+                  )}
+                </div>
+              );
+            })()}
 
             {(paymentMethod === "cartao_pedido" || paymentMethod === "cartao_entrega") && (
               <div className="pt-4 border-t border-dashed animate-in fade-in slide-in-from-top-4 space-y-3">
@@ -796,7 +864,9 @@ export default function QuoteForm({
               </div>
             )}
           </section>
+          )}
 
+          {step === 1 && (
           <section className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-6 sm:space-y-8">
             <div className="flex justify-between items-center border-b pb-4">
                <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">Produtos do Pedido</h2>
@@ -968,9 +1038,40 @@ export default function QuoteForm({
               )}
             </div>
           </section>
+          )}
+
+          {step === 4 && (
+            <section className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-5">
+              <h2 className="text-lg sm:text-xl font-black tracking-tight">Revisar antes de gerar</h2>
+              <dl className="grid grid-cols-2 gap-4 text-sm">
+                <div className="min-w-0"><dt className="label-caps">Cliente</dt><dd className="font-bold truncate">{clientName || "Não informado"}</dd></div>
+                <div className="min-w-0"><dt className="label-caps">Itens</dt><dd className="font-bold">{items.length} {items.length === 1 ? "item" : "itens"}</dd></div>
+                <div className="min-w-0"><dt className="label-caps">Entrega</dt><dd className="font-bold">{deliveryType === "retirada" ? "Retirada na fábrica" : deliveryType === "correios" ? "Correios" : "Entrega"}</dd></div>
+                <div className="min-w-0"><dt className="label-caps">Pagamento</dt><dd className="font-bold">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</dd></div>
+              </dl>
+              <div className="rounded-2xl bg-slate-50 p-4 grid grid-cols-3 gap-3 text-center">
+                <div><p className="text-[10px] font-black uppercase text-slate-400">Total</p><p className="font-black tabular-nums">{formatCurrency(total)}</p></div>
+                <div><p className="text-[10px] font-black uppercase text-slate-400">Sinal</p><p className="font-black tabular-nums">{formatCurrency(Number(downPayment) || 0)}</p></div>
+                <div><p className="text-[10px] font-black uppercase text-slate-400">Saldo</p><p className="font-black tabular-nums">{formatCurrency(remainingBalance)}</p></div>
+              </div>
+            </section>
+          )}
+
+          <div className="flex items-center justify-between gap-3">
+            <Button type="button" variant="outline" disabled={step === 0} onClick={() => setStep((st) => Math.max(0, st - 1))} className="h-12 rounded-2xl font-black min-h-[44px] px-6">
+              Voltar
+            </Button>
+            {step < 4 ? (
+              <Button type="button" onClick={() => setStep((st) => Math.min(4, st + 1))} className="h-12 rounded-2xl font-black min-h-[44px] px-6">
+                Continuar
+              </Button>
+            ) : (
+              <p className="text-xs font-bold text-slate-400">Confira e use o botão Gerar.</p>
+            )}
+          </div>
         </div>
 
-        <div className="lg:col-span-1 space-y-8">
+        <div className={cn("lg:col-span-1 space-y-8", step !== 1 && "hidden lg:block")}>
            <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/30 space-y-6 lg:sticky lg:top-10">
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 border-b pb-4 flex justify-between items-center">
                 Catálogo Rápido
@@ -1210,6 +1311,7 @@ export default function QuoteForm({
           <div className="flex-1 min-w-0 pl-2">
             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Total</p>
             <p className="text-base font-black text-slate-900 truncate">{formatCurrency(total)}</p>
+            <p className="text-[10px] font-bold text-slate-400 truncate">Sinal {formatCurrency(Number(downPayment) || 0)} · Saldo {formatCurrency(remainingBalance)}</p>
           </div>
           <Button 
             onClick={handleSave} 
