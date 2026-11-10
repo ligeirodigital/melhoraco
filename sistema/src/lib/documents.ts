@@ -56,8 +56,8 @@ type ReceiptQuote = QuoteLike & {
 };
 
 export const RECEIPT_META: Record<ReceiptType, { title: string; suffix: string; button: string; short: string }> = {
-  down_payment: { title: "Recibo de sinal", suffix: "S", button: "Recibo do sinal", short: "sinal" },
-  remaining_balance: { title: "Recibo de saldo", suffix: "R", button: "Recibo do saldo restante", short: "saldo restante" },
+  down_payment: { title: "Recibo parcial", suffix: "S", button: "Recibo parcial do sinal", short: "sinal" },
+  remaining_balance: { title: "Recibo parcial", suffix: "R", button: "Recibo parcial do saldo", short: "saldo restante" },
   full: { title: "Recibo de quitação", suffix: "Q", button: "Recibo total (quitação)", short: "quitação" },
 };
 
