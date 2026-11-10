@@ -99,6 +99,8 @@ export function paymentMethodLabel(raw?: string | null): string | null {
   const [kind, inst] = raw.toLowerCase().split(":");
   const n = inst?.match(/(\d+)x/)?.[1];
   const parcels = n && Number(n) > 1 ? ` em ${n}x` : "";
+  if (kind === "avista_pedido") return "À vista";
+  if (kind === "avista_entrega") return "À vista na entrega ou retirada";
   if (kind.includes("pix")) return "Pix";
   if (kind.includes("cart") || kind.includes("credit") || kind.includes("card")) return `Cartão${parcels}`;
   if (kind.includes("boleto")) return `Boleto${parcels}`;
