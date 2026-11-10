@@ -79,8 +79,6 @@ const SECONDARY: NavItem[] = [
   { id: "calendario", label: "Calendário financeiro", path: "/financeiro/calendario", icon: CalendarDays },
   { id: "loja", label: "Loja", path: "/loja", icon: Store },
   { id: "loja-admin", label: "Admin da loja", path: "/admin/loja", icon: ClipboardList, adminOnly: true },
-  { id: "pagamentos", label: "Eventos de pagamento", path: "/admin/pagamentos/eventos", icon: Receipt, adminOnly: true },
-  { id: "diagnosticos", label: "Diagnósticos", path: "/diag/payments", icon: Activity, adminOnly: true },
   { id: "ajustes", label: "Ajustes", path: "/settings", icon: Settings },
 ];
 

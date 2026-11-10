@@ -2,6 +2,7 @@ import React from "react";
 import { Package, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { confirmAction } from "@/lib/confirmAction";
 
 
 interface InventoryGridItemProps {
@@ -37,8 +38,8 @@ export const InventoryGridItem = ({ item, activeTab, onAdjust, onDelete }: Inven
             variant="ghost" 
             size="icon" 
             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
-            onClick={() => {
-              if (confirm(`Deseja realmente excluir ${item.name}?`)) {
+            onClick={async () => {
+              if (await confirmAction({ title: `Excluir ${item.name}?`, confirmLabel: "Excluir", destructive: true })) {
                 onDelete(item);
               }
             }}

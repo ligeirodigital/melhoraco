@@ -58,11 +58,12 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatQuote";
 import { MainLayout } from "@/components/MainLayout";
 import { cn } from "@/lib/utils";
+import { confirmAction } from "@/lib/confirmAction";
 import { 
   Select, 
   SelectContent, 
@@ -145,7 +146,7 @@ const LandingPagesManager = () => {
   };
 
   const deletePage = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta página?")) return;
+    if (!(await confirmAction({ title: "Excluir esta página?", description: "A página deixa de estar disponível para os clientes.", confirmLabel: "Excluir", destructive: true }))) return;
     const { error } = await supabase.from("landing_pages").delete().eq("id", id);
     if (!error) {
       toast.success("Página excluída");
@@ -598,7 +599,7 @@ export default function SettingsPage() {
   };
 
   const deleteProduct = async (id: string) => {
-    if (!window.confirm("Remover este produto do catálogo?")) return;
+    if (!(await confirmAction({ title: "Remover este produto do catálogo?", confirmLabel: "Remover", destructive: true }))) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) toast.error(error.message);
     else {
@@ -634,7 +635,7 @@ export default function SettingsPage() {
   };
 
   const deleteVariant = async (id: string) => {
-    if (!window.confirm("Remover este subproduto?")) return;
+    if (!(await confirmAction({ title: "Remover este subproduto?", confirmLabel: "Remover", destructive: true }))) return;
     const { error } = await supabase.from("product_variants").delete().eq("id", id);
     if (error) toast.error(error.message);
     else {
@@ -796,7 +797,7 @@ export default function SettingsPage() {
 
   const removeAllowedEmail = async (email: string) => {
     if (email === 'melhoracooficial@gmail.com') return toast.error("Não é possível remover o administrador");
-    if (!window.confirm(`Remover acesso de ${email}?`)) return;
+    if (!(await confirmAction({ title: `Remover acesso de ${email}?`, description: "Essa pessoa deixa de entrar no sistema.", confirmLabel: "Remover acesso", destructive: true }))) return;
     try {
       const { error } = await supabase.from('allowed_emails').delete().eq('email', email);
       if (error) throw error;
@@ -891,6 +892,23 @@ export default function SettingsPage() {
              })}
           </div>
         </header>
+
+        {isAdmin && (
+          <section aria-labelledby="tech-title" className="bg-card border border-border rounded-3xl p-6 space-y-4">
+            <div>
+              <h2 id="tech-title" className="text-sm font-black uppercase tracking-widest text-muted-foreground">Técnico</h2>
+              <p className="text-sm text-muted-foreground">Ferramentas para checar pagamentos. Só o administrador vê esta área.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Button asChild variant="outline" className="h-12 rounded-2xl justify-start font-black">
+                <Link to="/admin/pagamentos/eventos">Eventos de pagamento</Link>
+              </Button>
+              <Button asChild variant="outline" className="h-12 rounded-2xl justify-start font-black">
+                <Link to="/diag/payments">Diagnósticos de pagamento</Link>
+              </Button>
+            </div>
+          </section>
+        )}
 
         {activeTab === "branding" ? (
           <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">

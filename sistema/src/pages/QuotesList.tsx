@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { confirmAction } from "@/lib/confirmAction";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -86,7 +87,7 @@ export default function QuotesList() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (window.confirm("Deseja realmente excluir este orçamento?")) {
+    if (await confirmAction({ title: "Excluir este orçamento?", description: "Os pagamentos registrados nele também são apagados.", confirmLabel: "Excluir", destructive: true })) {
       const promise = mutations.removeQuote.mutateAsync(id);
       toast.promise(promise, {
         loading: 'Removendo orçamento...',
