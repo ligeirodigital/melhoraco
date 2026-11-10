@@ -4,10 +4,13 @@ import { FullQuote } from '../lib/cloudStore';
 import { formatCurrency } from '../lib/formatQuote';
 import { computeQuoteTotals, groupDocumentItems } from '../lib/quoteCalculations';
 import { paymentMethodLabel, resolveDocumentSettings } from '../lib/documents';
-import { DOC, doc, DocFooter, DocHeader } from './pdf/DocumentParts';
+import { DOC, doc, DocFooter } from './pdf/DocumentParts';
+
+/** Mesma faixa escura do recibo (Modelo A). */
+const BAND = '#2b2f3a';
 
 const s = StyleSheet.create({
-  th: { flexDirection: 'row', backgroundColor: DOC.steel, paddingVertical: 7, paddingHorizontal: 8, borderRadius: 6 },
+  th: { flexDirection: 'row', backgroundColor: BAND, paddingVertical: 7, paddingHorizontal: 8, borderRadius: 6 },
   thText: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#FFFFFF', textTransform: 'uppercase' },
   tr: { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: DOC.line, alignItems: 'center' },
   cSize: { flex: 3 },
@@ -42,7 +45,19 @@ export const QuotePDF = ({
   return (
     <Document title={`Orçamento #${quote.id.slice(0, 8).toUpperCase()}`}>
       <Page size="A4" style={doc.page}>
-        <DocHeader settings={settings} logoUrl={logoUrl} title="Orçamento" number={`Nº #${quote.id.slice(0, 8).toUpperCase()} · Emitido em ${created.toLocaleDateString('pt-BR')} · Válido até ${validUntil.toLocaleDateString('pt-BR')}`} />
+        <View style={{ backgroundColor: BAND, color: '#f5f1e6', paddingVertical: 18, paddingHorizontal: 32, marginHorizontal: -32, marginTop: -32, marginBottom: 18, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            {logoUrl ? <Image src={logoUrl} style={{ width: 40, height: 40, objectFit: 'contain' }} /> : null}
+            <View>
+              <Text style={{ fontSize: 16, fontFamily: 'Helvetica-Bold' }}>{settings.company_name}</Text>
+              <Text style={{ fontSize: 7.5, color: '#c7cbd4', marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>Móveis sob medida</Text>
+            </View>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={{ fontSize: 12, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.8 }}>Orçamento</Text>
+            <Text style={{ fontSize: 8, color: '#c7cbd4', marginTop: 2 }}>Nº #{quote.id.slice(0, 8).toUpperCase()} · Emitido em {created.toLocaleDateString('pt-BR')} · Válido até {validUntil.toLocaleDateString('pt-BR')}</Text>
+          </View>
+        </View>
 
         <View style={doc.box}>
           <Text style={doc.sectionTitle}>Cliente</Text>
@@ -99,9 +114,11 @@ export const QuotePDF = ({
 
         <View wrap={false}>
           <Text style={doc.sectionTitle}>Pagamento</Text>
-          <View style={doc.highlight}>
-            <Text style={doc.highlightLabel}>Total</Text>
-            <Text style={doc.highlightValue}>{formatCurrency(total)}</Text>
+          <View style={{ alignSelf: 'flex-end', width: 240, marginBottom: 10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1.5, borderTopColor: DOC.ink, paddingTop: 6 }}>
+              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>Total</Text>
+              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{formatCurrency(total)}</Text>
+            </View>
           </View>
           {downPayment > 0 && (
             <View style={{ marginBottom: 8 }}>
