@@ -94,9 +94,16 @@ export function receiptWarning(quote: ReceiptQuote, type: ReceiptType): string |
   return "A quitação ainda não foi registrada como paga";
 }
 
+/** Ids que descrevem entrega, não pagamento (a tela grava "retirada" como forma de pagamento). */
+const DELIVERY_ONLY_IDS = new Set(["retirada", "entrega", "correios"]);
+
 export function paymentMethodLabel(raw?: string | null): string | null {
   if (!raw) return null;
   const [kind, inst] = raw.toLowerCase().split(":");
+  if (DELIVERY_ONLY_IDS.has(kind)) return null;
+  if (kind === "sinal_retirada") return "Sinal no pedido + restante na retirada";
+  if (kind === "sinal_entrega") return "Sinal no pedido + restante na entrega";
+  if (kind === "avista_pedido") return "À vista";
   const n = inst?.match(/(\d+)x/)?.[1];
   const parcels = n && Number(n) > 1 ? ` em ${n}x` : "";
   if (kind.includes("pix")) return "Pix";
