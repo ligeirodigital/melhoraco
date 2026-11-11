@@ -16,8 +16,6 @@ import { formatCurrency, getQuoteTotal } from "@/lib/formatQuote";
 import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, isSameYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SalesTargetWidget } from "@/components/SalesTargetWidget";
-import { FollowUpQueue } from "@/components/sales/FollowUpQueue";
-import { UnpaidApprovedQuotes } from "@/components/sales/UnpaidApprovedQuotes";
 import {
   Select,
   SelectContent,
@@ -363,8 +361,6 @@ export const Dashboard = () => {
         </div>
       </motion.header>
 
-      <FollowUpQueue quotes={quotes.data || []} stages={pipelineStages.data || []} loading={quotes.isLoading} />
-      <UnpaidApprovedQuotes quotes={quotes.data || []} loading={quotes.isLoading} />
 
       {/* Sales Target — full width for better visibility */}
       <motion.div variants={itemVariants}>
@@ -516,62 +512,6 @@ export const Dashboard = () => {
 
       </motion.div>
 
-      {/* Recent Activity Section */}
-      <motion.div variants={itemVariants} className="space-y-8">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-            <FileText className="w-6 h-6 text-primary" /> Atividade Recente
-          </h2>
-          <Button variant="ghost" onClick={() => navigate("/")} className="font-black text-primary text-xs tracking-widest uppercase hover:bg-primary/5">
-            Ver Todos <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
-        
-        <div className="glass-card rounded-[3rem] overflow-hidden">
-          <div className="divide-y divide-slate-50">
-            {quotes.data?.slice(0, 5).map((quote, i) => {
-              const total = getQuoteTotal(quote as any);
-              return (
-                <motion.div 
-                  key={quote.id} 
-                  whileHover={{ backgroundColor: 'rgba(248, 250, 252, 0.5)' }}
-                  className="p-5 sm:p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 cursor-pointer group transition-all min-w-0" 
-                  onClick={() => navigate(`/quotes/${quote.id}`)}
-                >
-                  <div className="flex items-center gap-4 sm:gap-6 w-full md:w-auto min-w-0">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white premium-border rounded-2xl flex items-center justify-center text-slate-300 font-black text-lg sm:text-xl group-hover:text-primary transition-all shadow-sm shrink-0">
-                      {quote.client?.name?.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-black text-base sm:text-xl text-slate-900 tracking-tight group-hover:text-primary transition-colors truncate">{quote.client?.name}</h4>
-                      <div className="flex items-center gap-3 mt-1 flex-wrap">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">{new Date(quote.created_at).toLocaleDateString('pt-BR')}</span>
-                        <span className="w-1 h-1 bg-slate-200 rounded-full" />
-                        <span className={cn(
-                          "text-[9px] uppercase font-black px-2.5 py-1 rounded-full",
-                          quote.status === "aprovado" ? "bg-emerald-100 text-emerald-600" :
-                          quote.status === "recusado" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
-                        )}>
-                          {quote.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between md:justify-end gap-4 sm:gap-6 md:gap-10 w-full md:w-auto min-w-0">
-                    <div className="text-right min-w-0">
-                      <p className="label-caps !mb-0 opacity-40">Valor Total</p>
-                      <p className="font-black text-slate-900 tracking-tighter break-words" style={{ fontSize: 'clamp(1.125rem, 4vw, 1.5rem)' }}>{formatCurrency(total)}</p>
-                    </div>
-                    <div className="min-h-11 min-w-11 w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all shrink-0">
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </motion.div>
     </motion.div>
   );
 };
