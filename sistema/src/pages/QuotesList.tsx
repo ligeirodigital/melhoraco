@@ -57,6 +57,10 @@ const itemVariants: any = {
   }
 };
 
+/** Minúsculas e sem acentos, para a busca achar "Sao" e "São" da mesma forma. */
+const normalizeText = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export default function QuotesList() {
   const navigate = useNavigate();
   const { quotes, mutations, settings, pipelineStages } = useProjectData();
@@ -65,9 +69,16 @@ export default function QuotesList() {
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
   const filtered = useMemo(() => {
-    let result = (quotes.data ?? []).filter(q => 
-      q.client?.name?.toLowerCase().includes(search.toLowerCase())
-    );
+    const term = normalizeText(search.trim());
+    const digits = search.replace(/\D/g, "");
+    let result = (quotes.data ?? []).filter(q => {
+      if (!term) return true;
+      const byName = normalizeText(q.client?.name ?? "").includes(term);
+      const byAddress = normalizeText((q as any).delivery_address ?? "").includes(term);
+      const byId = String(q.id).toLowerCase().startsWith(term.replace(/^#/, ""));
+      const byPhone = digits.length >= 4 && String((q.client as any)?.phone ?? "").replace(/\D/g, "").includes(digits);
+      return byName || byAddress || byId || byPhone;
+    });
 
     if (statusFilter !== "all") {
       result = statusFilter === "follow_up" ? followUpQueue(result) : result.filter(q => q.status === statusFilter);
@@ -156,7 +167,7 @@ export default function QuotesList() {
               <Search className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <Input 
-              placeholder="Pesquisar por cliente..." 
+              placeholder="Cliente, telefone, endereço ou nº do orçamento..." aria-label="Pesquisar orçamentos" 
               className="pl-14 sm:pl-16 h-14 sm:h-16 rounded-2xl sm:rounded-[2rem] border-slate-100 bg-white shadow-sm text-base sm:text-lg font-bold transition-all focus:ring-4 focus:ring-primary/5 focus:border-primary/20"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -242,6 +253,12 @@ export default function QuotesList() {
         </motion.div>
 
         {/* List Section */}
+        {(search.trim() || statusFilter !== "all" || paymentFilter !== "all") && (
+          <p className="text-sm font-bold text-slate-400 px-2" role="status">
+            {filtered.length} de {(quotes.data ?? []).length} orçamentos
+          </p>
+        )}
+
         {statusFilter === "follow_up" ? <FollowUpQueue quotes={filtered} stages={pipelineStages.data || []} loading={quotes.isLoading} /> : <div className="grid gap-6">
           {quotes.isLoading ? (
             <QuotesSkeleton />
