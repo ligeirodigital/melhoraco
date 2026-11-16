@@ -5,8 +5,6 @@ import {
   CalendarClock,
   Users,
   Package,
-  BarChart3,
-  CalendarDays,
   Settings,
   Store,
   ClipboardList,
@@ -75,8 +73,6 @@ const PRIMARY: NavItem[] = [
 const SECONDARY: NavItem[] = [
   { id: "clientes", label: "Clientes", path: "/clients", icon: Users },
   { id: "estoque", label: "Estoque", path: "/inventory", icon: Package },
-  { id: "financeiro", label: "Financeiro DRE", path: "/dre", icon: BarChart3 },
-  { id: "calendario", label: "Calendário financeiro", path: "/financeiro/calendario", icon: CalendarDays },
   { id: "loja", label: "Loja", path: "/loja", icon: Store },
   { id: "loja-admin", label: "Admin da loja", path: "/admin/loja", icon: ClipboardList, adminOnly: true },
   { id: "pagamentos", label: "Eventos de pagamento", path: "/admin/pagamentos/eventos", icon: Receipt, adminOnly: true },

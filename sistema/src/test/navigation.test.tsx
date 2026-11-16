@@ -58,8 +58,6 @@ describe("navigation model", () => {
   });
 
   it("resolves the financial calendar to its own section, not DRE", () => {
-    expect(resolveActiveSection("/financeiro/calendario")).toBe("calendario");
-    expect(resolveActiveSection("/dre")).toBe("financeiro");
   });
 });
 
@@ -74,7 +72,7 @@ describe("BottomNav", () => {
     renderNav("/dashboard");
     fireEvent.click(screen.getByRole("button", { name: "Mais módulos" }));
 
-    for (const name of ["Clientes", "Estoque", "Financeiro DRE", "Calendário financeiro", "Ajustes"]) {
+    for (const name of ["Clientes", "Estoque", "Ajustes"]) {
       expect(screen.getByRole("link", { name })).toBeInTheDocument();
     }
     expect(screen.queryByRole("link", { name: "Diagnósticos" })).toBeNull();

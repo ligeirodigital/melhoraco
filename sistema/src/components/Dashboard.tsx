@@ -372,7 +372,7 @@ export const Dashboard = () => {
         <motion.div 
           whileHover={{ y: -5 }}
           className="bg-slate-900 p-6 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] text-white shadow-2xl relative overflow-hidden group cursor-pointer min-w-0" 
-          onClick={() => navigate("/dre")}
+          onClick={() => navigate("/dashboard?tab=financeiro")}
         >
           <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-1000">
             <Wallet className="w-56 h-56" />
@@ -416,7 +416,7 @@ export const Dashboard = () => {
         <motion.div 
           whileHover={{ y: -5 }}
           className="bg-primary p-6 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group cursor-pointer min-w-0" 
-          onClick={() => navigate("/dre")}
+          onClick={() => navigate("/dashboard?tab=financeiro")}
         >
           <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-1000">
             <LineChartIcon className="w-56 h-56" />
