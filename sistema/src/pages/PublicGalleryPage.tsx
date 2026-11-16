@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Star, ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.jfif";
 import { Button } from "@/components/ui/button";
+import { WHATSAPP_LINK } from "@/components/reseller/ResellerData";
 
 type FeedbackRow = {
   id: string;
@@ -79,6 +80,13 @@ export default function PublicGalleryPage() {
           <div className="flex items-center justify-center py-32">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : gallery.isError ? (
+          <div role="alert" className="text-center py-32 space-y-4">
+            <p className="text-white/70">Não conseguimos carregar os projetos agora.</p>
+            <Button variant="outline" onClick={() => gallery.refetch()} className="rounded-xl border-white/20 text-white hover:bg-white/10 min-h-[44px]">
+              Tentar de novo
+            </Button>
+          </div>
         ) : items.length === 0 ? (
           <div className="text-center py-32">
             <p className="text-white/40">Nenhum projeto publicado ainda.</p>
@@ -116,6 +124,14 @@ export default function PublicGalleryPage() {
             })}
           </div>
         )}
+
+        <div className="mt-16 rounded-3xl border border-white/10 bg-white/5 p-8 md:p-12 text-center space-y-4">
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight">Quer um projeto assim na sua casa?</h2>
+          <p className="text-white/60 max-w-xl mx-auto">Fale com a gente pelo WhatsApp e receba um orçamento sob medida.</p>
+          <Button asChild className="h-12 rounded-2xl font-black px-8 min-h-[44px]">
+            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>
+          </Button>
+        </div>
       </section>
     </div>
   );
