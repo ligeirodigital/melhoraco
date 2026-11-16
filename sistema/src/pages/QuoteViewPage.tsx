@@ -561,6 +561,32 @@ const QuoteViewPage = () => {
                           </div>
                         );
                       })()}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const address = quote.delivery_address?.trim();
+                          if (!address) {
+                            toast.error("Sem endereço de entrega");
+                            return;
+                          }
+                          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+                          const lines = [
+                            quote.client?.name ? `Cliente: ${quote.client.name}` : null,
+                            `Endereço: ${address}`,
+                            `Maps: ${mapsUrl}`,
+                          ].filter(Boolean);
+                          try {
+                            await navigator.clipboard.writeText(lines.join("\n"));
+                            toast.success("Endereço com link do Maps copiado!");
+                          } catch {
+                            toast.error("Não foi possível copiar");
+                          }
+                        }}
+                        className="mt-3 w-full h-12 rounded-2xl border-2 border-primary/30 bg-white text-primary font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-primary/5 transition-all active:scale-[0.98] min-h-[44px]"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copiar para o motoboy (com Maps)
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
