@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function FollowUpQueue({ quotes, stages = [], loading = false }: { quotes: FullQuote[]; stages?: { id: string; name: string }[]; loading?: boolean }) {
   const action = useSalesFollowUp();
@@ -38,7 +39,7 @@ export function FollowUpQueue({ quotes, stages = [], loading = false }: { quotes
     <header className="flex flex-wrap items-end justify-between gap-3">
       <div><h2 id="follow-up-title" className="text-2xl font-black text-foreground">A cobrar <span className="text-muted-foreground text-base">({active.length})</span></h2><p className="text-sm text-muted-foreground">{formatCurrency(total)} em propostas paradas{queue.length > active.length ? ` · ${queue.length - active.length} retornos agendados` : ""}</p></div>
     </header>
-    {loading ? <p role="status" className="text-muted-foreground">Carregando contatos…</p> : queue.length === 0 ? <p className="text-muted-foreground py-4">Nenhuma proposta pendente.</p> : <div className="max-h-[32rem] overflow-y-auto overscroll-contain divide-y divide-border border-y border-border">
+    {loading ? <div className="space-y-3" role="status" aria-label="Carregando"><Skeleton className="h-12 rounded-xl" /><Skeleton className="h-12 rounded-xl" /></div> : queue.length === 0 ? <p className="text-muted-foreground py-4">Nenhuma proposta pendente.</p> : <div className="max-h-[32rem] overflow-y-auto overscroll-contain divide-y divide-border border-y border-border">
       {queue.map(q => {
         const days = contactDays(q); const urgency = contactUrgency(days); const origin = leadOriginLabel(q);
         return <article key={q.id} className="py-4 flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">

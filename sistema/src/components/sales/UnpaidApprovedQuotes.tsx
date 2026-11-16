@@ -10,6 +10,7 @@ import { openWhatsApp } from "@/lib/whatsappTemplates";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
 import { useSalesFollowUp } from "@/hooks/useSalesFollowUp";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UnpaidApprovedQuotes({ quotes, loading = false }: { quotes: FullQuote[]; loading?: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export function UnpaidApprovedQuotes({ quotes, loading = false }: { quotes: Full
   };
   return <section aria-labelledby="unpaid-title" className="space-y-4 min-w-0">
     <header className="flex flex-wrap items-end justify-between gap-2"><h2 id="unpaid-title" className="text-xl font-black text-foreground flex items-center gap-2"><CreditCard className="size-5 shrink-0" />Aprovados aguardando pagamento</h2><span className="text-sm font-bold text-muted-foreground">{pending.length} · {formatCurrency(pending.reduce((sum, q) => sum + getQuoteTotal(q), 0))}</span></header>
-    {loading ? <p role="status" className="text-muted-foreground">Carregando pagamentos…</p> : pending.length === 0 ? <p className="text-muted-foreground py-4">Nenhum aprovado aguardando pagamento.</p> : <div className="max-h-96 overflow-y-auto divide-y divide-border border-y border-border">
+    {loading ? <div className="space-y-3" role="status" aria-label="Carregando"><Skeleton className="h-12 rounded-xl" /><Skeleton className="h-12 rounded-xl" /></div> : pending.length === 0 ? <p className="text-muted-foreground py-4">Nenhum aprovado aguardando pagamento.</p> : <div className="max-h-96 overflow-y-auto divide-y divide-border border-y border-border">
       {pending.map(q => <article key={q.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0"><Link to={`/quotes/${q.id}`} className="font-bold hover:underline break-words">{q.client?.name}</Link><p className="font-semibold tabular-nums">{formatCurrency(getQuoteTotal(q))}</p><p className="text-xs text-muted-foreground">{q.approved_at || q.signed_at ? `${contactDays({ created_at: q.approved_at || q.signed_at || q.created_at })} dias desde a aprovação${q.approved_at ? "" : " assinada"}` : "Data de aprovação não registrada"}</p></div>
         <div className="grid gap-2 sm:flex sm:flex-wrap"><Button className="h-11" disabled={busy !== null} onClick={() => void resend(q)}><MessageCircle />{busy === q.id ? "Preparando…" : "Reenviar link de pagamento"}</Button><Button variant="outline" className="h-11" asChild><Link to={`/quotes/${q.id}`}>Já foi pago</Link></Button></div>

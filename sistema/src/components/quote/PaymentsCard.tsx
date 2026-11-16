@@ -12,6 +12,7 @@ import {
   createQuotePayment, deleteQuotePayment, fetchQuotePayments, PAYMENT_KIND_LABEL, quotePaymentsKey,
   summarizePayments, type PaymentKind,
 } from "@/lib/quotePayments";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const todayIso = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
 const fmtDay = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Fortaleza" });
@@ -94,9 +95,9 @@ export function PaymentsCard({ quote }: { quote: FullQuote }) {
         </div>
 
         {paymentsQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">Carregando pagamentos…</p>
+          <div className="space-y-2" role="status" aria-label="Carregando pagamentos"><Skeleton className="h-12 rounded-xl" /></div>
         ) : payments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum pagamento registrado ainda.</p>
+          <p className="text-sm text-muted-foreground">Nenhum pagamento registrado ainda. Use “Registrar” para lançar sinal, parcelas ou saldo.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {payments.map((p, i) => (
