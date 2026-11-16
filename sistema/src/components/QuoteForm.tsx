@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { NumberingQuickEntry } from "@/components/quote/NumberingQuickEntry";
 import { LEAD_ORIGINS } from "@/lib/attribution";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { confirmAction } from "@/lib/confirmAction";
 
 
 export default function QuoteForm({ 
@@ -1146,7 +1147,7 @@ export default function QuoteForm({
                        </button>
                        <button 
                         onClick={async () => {
-                          if (confirm(`Ocultar ${p.name} do catálogo rápido?`)) {
+                          if (await confirmAction({ title: `Ocultar ${p.name} do catálogo rápido?`, confirmLabel: "Ocultar" })) {
                             try {
                               await hideProduct(p.id, true);
                               setProducts(products.map(item => item.id === p.id ? { ...item, hidden: true } : item));
@@ -1163,7 +1164,7 @@ export default function QuoteForm({
                        </button>
                        <button 
                         onClick={async () => {
-                          if (confirm(`Excluir ${p.name} permanentemente do catálogo?`)) {
+                          if (await confirmAction({ title: `Excluir ${p.name} do catálogo?`, description: "O produto some do catálogo. Pedidos antigos continuam com o histórico.", confirmLabel: "Excluir", destructive: true })) {
                             try {
                               await deleteProduct(p.id);
                               setProducts(products.filter(item => item.id !== p.id));
@@ -1207,7 +1208,7 @@ export default function QuoteForm({
                               </button>
                               <button 
                                 onClick={async () => {
-                                  if (confirm(`Excluir variação ${v.name}?`)) {
+                                  if (await confirmAction({ title: `Excluir variação ${v.name}?`, confirmLabel: "Excluir", destructive: true })) {
                                     try {
                                       await deleteProductVariant(v.id);
                                       // Update local state by refetching or filtering
