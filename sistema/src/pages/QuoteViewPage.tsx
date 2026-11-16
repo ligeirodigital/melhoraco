@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { ReceiptActions } from "@/components/quote/ReceiptActions";
 import { PaymentsCard } from "@/components/quote/PaymentsCard";
+import { PaymentSummary } from "@/components/quote/PaymentSummary";
 import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
@@ -888,104 +889,9 @@ const QuoteViewPage = () => {
                            )}
                          </div>
                        ) : (
-                       <div className="space-y-3">
-                        <label className="label-caps !text-white/30 !mb-2">Controle de Fluxo de Caixa</label>
-                        
-                        {/* Full Payment Button */}
-                        <motion.button
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleUpdateFullPayment(!(quote.down_payment_paid_at && quote.final_payment_paid_at))} 
-                          className={cn(
-                            "w-full p-5 rounded-3xl flex items-center justify-between border-2 transition-all group/btn",
-                            (quote.down_payment_paid_at && quote.final_payment_paid_at)
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                              : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                          )}
-                        >
-                          <div className="flex items-center gap-4 text-left">
-                            <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                              (quote.down_payment_paid_at && quote.final_payment_paid_at) ? "bg-emerald-500 text-slate-900" : "bg-white/10 text-white"
-                            )}>
-                              {(quote.down_payment_paid_at && quote.final_payment_paid_at) ? <CheckCircle2 className="w-6 h-6" /> : <DollarSign className="w-6 h-6" />}
-                            </div>
-                            <div>
-                              <p className="font-black text-sm uppercase tracking-wider">Valor Total Recebido</p>
-                              <p className="text-[10px] opacity-60 font-bold tracking-widest">{(quote.down_payment_paid_at && quote.final_payment_paid_at) ? "QUITAÇÃO COMPLETA" : "RECEBER TUDO AGORA"}</p>
-                            </div>
-                          </div>
-                          <ChevronRight className={cn("w-5 h-5 opacity-30 group-hover/btn:opacity-100 transition-all", (quote.down_payment_paid_at && quote.final_payment_paid_at) && "rotate-90 opacity-100")} />
-                        </motion.button>
-
-                        {/* Down Payment Button */}
-                        <motion.button
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleUpdatePartialPayment("down_payment_paid_at", !quote.down_payment_paid_at)} 
-                          className={cn(
-                            "w-full p-5 rounded-3xl flex items-center justify-between border-2 transition-all group/btn",
-                            quote.down_payment_paid_at 
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                              : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                          )}
-                        >
-                          <div className="flex items-center gap-4 text-left">
-                            <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                              quote.down_payment_paid_at ? "bg-emerald-500 text-slate-900" : "bg-white/10 text-white"
-                            )}>
-                              {quote.down_payment_paid_at ? <CheckCircle2 className="w-6 h-6" /> : <CreditCard className="w-6 h-6" />}
-                            </div>
-                            <div>
-                              <p className="font-black text-sm uppercase tracking-wider">Sinal Recebido</p>
-                              <p className="text-[10px] opacity-60 font-bold tracking-widest">{quote.down_payment_paid_at ? "CONFIRMADO EM CONTA" : "AGUARDANDO DEPÓSITO"}</p>
-                            </div>
-                          </div>
-                          <ChevronRight className={cn("w-5 h-5 opacity-30 group-hover/btn:opacity-100 transition-all", quote.down_payment_paid_at && "rotate-90 opacity-100")} />
-                        </motion.button>
-
-                        {/* Final Payment Button */}
-                        <motion.button
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleUpdatePartialPayment("final_payment_paid_at", !quote.final_payment_paid_at)} 
-                          className={cn(
-                            "w-full p-5 rounded-3xl flex items-center justify-between border-2 transition-all group/btn",
-                            quote.final_payment_paid_at 
-                              ? "bg-blue-500/10 border-blue-500/30 text-blue-400" 
-                              : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                          )}
-                        >
-                          <div className="flex items-center gap-4 text-left">
-                            <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                              quote.final_payment_paid_at ? "bg-blue-500 text-white" : "bg-white/10 text-white"
-                            )}>
-                              {quote.final_payment_paid_at ? <CheckCircle2 className="w-6 h-6" /> : <DollarSign className="w-6 h-6" />}
-                            </div>
-                            <div>
-                              <p className="font-black text-sm uppercase tracking-wider">Restante Recebido</p>
-                              <p className="text-[10px] opacity-60 font-bold tracking-widest">{quote.final_payment_paid_at ? "QUITAÇÃO TOTAL" : "VALOR PENDENTE"}</p>
-                            </div>
-                          </div>
-                          <ChevronRight className={cn("w-5 h-5 opacity-30 group-hover/btn:opacity-100 transition-all", quote.final_payment_paid_at && "rotate-90 opacity-100")} />
-                        </motion.button>
-                       </div>
+                       <PaymentSummary quote={quote} total={total} />
                        )}
 
-                      {quote.down_payment_paid_at && !quote.final_payment_paid_at && (
-                        <div className="p-6 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex flex-col gap-2">
-                           <div className="flex justify-between items-center">
-                             <span className="text-[11px] font-black uppercase text-amber-500 tracking-[0.2em]">Aguardando</span>
-                             <span className="font-black text-amber-500 text-xl tracking-tighter">{formatCurrency(total - (quote.down_payment || 0))}</span>
-                           </div>
-                           <div className="h-1.5 bg-amber-500/20 rounded-full overflow-hidden">
-                             <motion.div 
-                               initial={{ width: 0 }}
-                               animate={{ width: `${((quote.down_payment || 0) / total) * 100}%` }}
-                               className="h-full bg-amber-500" 
-                             />
-                           </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -1030,7 +936,9 @@ const QuoteViewPage = () => {
                       </Button>
                     </LazyPdfButton>
 
-                    <PaymentsCard quote={quote} />
+                    <div id="pagamentos" className="scroll-mt-6">
+                      <PaymentsCard quote={quote} />
+                    </div>
 
                     <ReceiptActions
                       quote={quote}
