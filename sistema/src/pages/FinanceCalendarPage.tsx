@@ -29,7 +29,7 @@ function monthLabel(d: Date) {
   return d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 }
 
-export default function FinanceCalendarPage() {
+export function FinanceCalendarView() {
   const { user } = useAuth();
   const { quotes, settings } = useProjectData();
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
@@ -182,7 +182,6 @@ export default function FinanceCalendarPage() {
   const selectedEntries = selected ? entriesByDay(selected) : [];
 
   return (
-    <MainLayout>
       <div className="p-4 md:p-10 max-w-7xl mx-auto pb-32 space-y-8">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -313,6 +312,13 @@ export default function FinanceCalendarPage() {
           </p>
         )}
       </div>
+  );
+}
+
+export default function FinanceCalendarPage() {
+  return (
+    <MainLayout>
+      <FinanceCalendarView />
     </MainLayout>
   );
 }

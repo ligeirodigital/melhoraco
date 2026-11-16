@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { brl, orderStatusLabel } from "@/lib/storeHelpers";
 import { CatalogManager } from "@/components/catalog/CatalogManager";
 import { Link } from "react-router-dom";
+import { confirmAction } from "@/lib/confirmAction";
 
 type Row = {
   id: string;
@@ -110,7 +111,7 @@ export default function StoreAdminPage() {
   };
 
   const rejectOrder = async (r: Row) => {
-    if (!confirm("Marcar este pedido como recusado?")) return;
+    if (!(await confirmAction({ title: "Recusar este pedido?", description: "O cliente vê o pedido como recusado.", confirmLabel: "Recusar", destructive: true }))) return;
     const { error } = await supabase
       .from("quotes")
       .update({ payment_status: "refused", status: "recusado" })

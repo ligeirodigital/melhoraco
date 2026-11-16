@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ConfirmHost } from "@/components/ui/ConfirmHost";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,7 +12,6 @@ const QuotesList = lazy(() => import("./pages/QuotesList"));
 const QuoteFormPage = lazy(() => import("./pages/QuoteFormPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const DREPage = lazy(() => import("./pages/DREPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const QuoteViewPage = lazy(() => import("./pages/QuoteViewPage"));
 const PublicPage = lazy(() => import("./pages/PublicPage"));
@@ -21,7 +21,6 @@ const ResellerLP = lazy(() => import("./pages/ResellerLP"));
 const PaymentDiagnostics = lazy(() => import("./pages/PaymentDiagnostics"));
 const SandboxCheckout = lazy(() => import("./pages/SandboxCheckout"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
-const FinanceCalendarPage = lazy(() => import("./pages/FinanceCalendarPage"));
 const PublicGalleryPage = lazy(() => import("./pages/PublicGalleryPage"));
 const AgendaPage = lazy(() => import("./pages/AgendaPage"));
 const StorePage = lazy(() => import("./pages/StorePage"));
@@ -89,6 +88,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <Sonner position="top-right" />
+        <ConfirmHost />
         <BrowserRouter basename={BASE_PATH}>
           <PublicTracking />
           <Suspense fallback={
@@ -122,8 +122,8 @@ const App = () => (
               <Route path="/investidor/dashboard" element={<ProtectedRoute><InvestorDashboardPage /></ProtectedRoute>} />
               <Route path="/new" element={<ProtectedRoute><QuoteFormPage /></ProtectedRoute>} />
               <Route path="/quotes/:id" element={<ProtectedRoute><QuoteViewPage /></ProtectedRoute>} />
-              <Route path="/dre" element={<ProtectedRoute><DREPage /></ProtectedRoute>} />
-              <Route path="/financeiro/calendario" element={<ProtectedRoute><FinanceCalendarPage /></ProtectedRoute>} />
+              <Route path="/dre" element={<Navigate to="/dashboard?tab=financeiro" replace />} />
+              <Route path="/financeiro/calendario" element={<Navigate to="/dashboard?tab=calendario" replace />} />
               <Route path="/agenda" element={<ProtectedRoute><AgendaPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/diag/payments" element={<ProtectedRoute><PaymentDiagnostics /></ProtectedRoute>} />

@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { ReceiptActions } from "@/components/quote/ReceiptActions";
+import { PaymentsCard } from "@/components/quote/PaymentsCard";
 import { appUrl } from "@/lib/appUrl";
 import { leadOriginLabel } from "@/lib/attribution";
 import { supabase, FN_PREFIX } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
 import { getBoletoPlan } from "@/lib/receivables";
+import { confirmAction } from "@/lib/confirmAction";
 
 const containerVariants: any = {
   hidden: { opacity: 0 },
@@ -125,15 +127,10 @@ const QuoteViewPage = () => {
 
   const handleCheckPayment = async (manual = false, silent = false) => {
     if (!id || checkingPayment) return;
-    let receiptUrl: string | null = null;
-    if (manual) {
-      receiptUrl = window.prompt("Cole o link do comprovante (opcional):") || null;
-      if (!window.confirm("Confirmar recebimento manualmente? Isso marca o orçamento como PAGO.")) return;
-    }
     setCheckingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-check-payment`, {
-        body: { quoteId: id, manual, receiptUrl },
+        body: { quoteId: id, manual: false, receiptUrl: null },
       });
       if (error) throw error;
       await reloadTx();
@@ -141,8 +138,8 @@ const QuoteViewPage = () => {
       const result = data?.status === "paid" ? "paid" : "pending";
       setLastCheck({ at: new Date(), result, source: data?.source });
       if (!silent) {
-        if (result === "paid") toast.success(manual ? "Pagamento confirmado manualmente!" : "Pagamento confirmado!");
-        else toast.info("Ainda pendente. Se o cliente já pagou, use 'Confirmar manualmente'.");
+        if (result === "paid") toast.success("Pagamento confirmado!");
+        else toast.info("Ainda pendente. Se o cliente já pagou, registre o pagamento na seção Pagamentos.");
       }
     } catch (e: any) {
       setLastCheck({ at: new Date(), result: "error", message: e.message });
@@ -561,6 +558,32 @@ const QuoteViewPage = () => {
                           </div>
                         );
                       })()}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const address = quote.delivery_address?.trim();
+                          if (!address) {
+                            toast.error("Sem endereço de entrega");
+                            return;
+                          }
+                          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+                          const lines = [
+                            quote.client?.name ? `Cliente: ${quote.client.name}` : null,
+                            `Endereço: ${address}`,
+                            `Maps: ${mapsUrl}`,
+                          ].filter(Boolean);
+                          try {
+                            await navigator.clipboard.writeText(lines.join("\n"));
+                            toast.success("Endereço com link do Maps copiado!");
+                          } catch {
+                            toast.error("Não foi possível copiar");
+                          }
+                        }}
+                        className="mt-3 w-full h-12 rounded-2xl border-2 border-primary/30 bg-white text-primary font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-primary/5 transition-all active:scale-[0.98] min-h-[44px]"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copiar para o motoboy (com Maps)
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -632,15 +655,6 @@ const QuoteViewPage = () => {
                       >
                         {checkingPayment ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                         Verificar status
-                      </Button>
-                      <Button
-                        onClick={() => handleCheckPayment(true)}
-                        disabled={checkingPayment}
-                        variant="outline"
-                        className="h-14 rounded-2xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-black"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Confirmar manualmente
                       </Button>
                     </div>
                   )}
@@ -1015,6 +1029,8 @@ const QuoteViewPage = () => {
                         <span><ClipboardList className="w-6 h-6 text-orange-500 group-hover:scale-110 transition-transform" /> Ordem de Serviço (O.S)</span>
                       </Button>
                     </LazyPdfButton>
+
+                    <PaymentsCard quote={quote} />
 
                     <ReceiptActions
                       quote={quote}
