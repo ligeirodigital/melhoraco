@@ -866,7 +866,7 @@ export default function SettingsPage() {
              {[
                { id: "branding", label: "Branding", icon: ImageIcon },
                { id: "catalog", label: "Catálogo", icon: Package },
-               { id: "landing-pages", label: "Vendas", icon: Zap },
+               { id: "landing-pages", label: "Páginas de venda", icon: Zap },
                { id: "financial", label: "Financeiro", icon: Calculator },
                { id: "employees", label: "Funcionários", icon: Users },
                { id: "referrals", label: "Indicações", icon: Gift },
