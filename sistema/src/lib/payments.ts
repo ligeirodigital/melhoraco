@@ -17,11 +17,10 @@ export async function createPaymentLink(params: CreatePaymentParams) {
 
   // ============ INFINITYPAY (API oficial - link de checkout) ============
   if (provider === "infinitypay") {
-    const handle = localStorage.getItem(`infinitypay_handle_${userId}`);
+    // O handle vale para a empresa: a função usa o handle salvo nas configurações do dono do orçamento.
+    // O cache local é só um atalho; não bloqueamos aqui porque outro navegador pode não tê-lo.
+    const handle = localStorage.getItem(`infinitypay_handle_${userId}`) || undefined;
     const sandbox = localStorage.getItem(`infinitypay_sandbox_${userId}`) === "1";
-    if (!handle && !sandbox) {
-      throw new Error("Configure seu handle da InfinityPay em Configurações antes de gerar o link.");
-    }
 
     const { data, error } = await supabase.functions.invoke(`${FN_PREFIX}infinitypay-create-link`, {
       body: {
@@ -32,7 +31,17 @@ export async function createPaymentLink(params: CreatePaymentParams) {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      // A função responde com { error } em JSON; mostramos essa mensagem em vez da genérica do cliente.
+      let message = "Não foi possível gerar o link da InfinityPay";
+      try {
+        const body = await (error as any).context?.json?.();
+        if (body?.error) message = String(body.error);
+      } catch {
+        /* sem corpo JSON: mantém a mensagem genérica */
+      }
+      throw new Error(message);
+    }
     if (!data?.url) throw new Error("Link não retornado pela InfinityPay");
 
     return {
