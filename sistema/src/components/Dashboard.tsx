@@ -361,7 +361,7 @@ export const Dashboard = () => {
               <ArrowUpRight className="w-6 h-6 text-white/40 group-hover:text-white transition-colors" />
             </div>
             <div className="min-w-0">
-              <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Liquidez Imediata</p>
+              <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Saldo de caixa (acumulado)</p>
               <h3 className="font-black tracking-tighter break-words" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.25rem)' }}>{formatCurrency(globalStats.balance)}</h3>
             </div>
           </div>
@@ -383,7 +383,7 @@ export const Dashboard = () => {
               <ArrowUpRight className="w-6 h-6 text-slate-200 group-hover:text-primary transition-colors" />
             </div>
             <div className="min-w-0">
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Ativos em Estoque</p>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Estoque (posição atual)</p>
               <h3 className="font-black tracking-tighter break-words" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.25rem)' }}>{formatCurrency(inventoryValue)}</h3>
             </div>
           </div>
@@ -405,7 +405,7 @@ export const Dashboard = () => {
               <ArrowUpRight className="w-6 h-6 text-white/40 group-hover:text-white transition-colors" />
             </div>
             <div className="min-w-0">
-              <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Resultado Operacional</p>
+              <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Lucro do mês (antes dos investidores)</p>
               <h3 className="font-black tracking-tighter break-words" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.25rem)' }}>{formatCurrency(filteredDre.netProfit)}</h3>
             </div>
           </div>
