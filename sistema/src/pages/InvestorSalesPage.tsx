@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, Search, ShoppingBag } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,16 @@ export default function InvestorSalesPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const month = selected ?? months[0]?.month ?? null;
   const summary = months.find((m) => m.month === month);
-  const visible = sales.filter((s) => s.month === month).sort((a, b) => b.date.localeCompare(a.date));
+  const [query, setQuery] = useState("");
+  const term = query.trim().toLowerCase();
+  // Com busca ativa, procura em todos os meses; sem busca, mostra só o mês escolhido.
+  const visible = sales
+    .filter((s) => {
+      if (!term) return s.month === month;
+      const hay = `${s.clientName} ${s.id} ${s.items.map((i) => i.name).join(" ")}`.toLowerCase();
+      return hay.includes(term) || s.id.slice(0, 8).toLowerCase().startsWith(term.replace(/^#/, ""));
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <MainLayout>
@@ -67,6 +77,21 @@ export default function InvestorSalesPage() {
                 <Stat label="Recebido" value={formatBRL(summary.received)} tone="text-emerald-600" />
                 <Stat label="A receber" value={formatBRL(summary.toReceive)} />
               </div>
+            )}
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+              <Input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar por cliente, produto ou nº do pedido"
+                aria-label="Buscar vendas"
+                className="h-12 pl-10 rounded-2xl"
+              />
+            </div>
+            {term && (
+              <p className="text-xs text-slate-500" role="status">{visible.length} {visible.length === 1 ? "venda encontrada" : "vendas encontradas"} em todos os meses</p>
             )}
 
             <div className="space-y-3">

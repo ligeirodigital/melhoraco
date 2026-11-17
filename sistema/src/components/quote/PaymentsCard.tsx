@@ -107,7 +107,7 @@ export function PaymentsCard({ quote }: { quote: FullQuote }) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="font-black tabular-nums">{formatCurrency(p.amount)}</span>
-                  <Button size="icon" variant="ghost" aria-label="Remover pagamento" className="h-8 w-8 text-slate-400 hover:text-rose-600" onClick={() => remove(p.id)}>
+                  <Button size="icon" variant="ghost" aria-label="Remover pagamento" className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-400 hover:text-rose-600" onClick={() => remove(p.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

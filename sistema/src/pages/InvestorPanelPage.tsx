@@ -125,6 +125,12 @@ export default function InvestorPanelPage() {
           <p className="text-xs font-black uppercase tracking-widest text-slate-400">Minha comissão</p>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Olá, {panel.investor.name}</h1>
           <p className="text-sm text-slate-500">Sua parte é {panel.investor.share_percentage}% do lucro de cada mês.</p>
+          {panel.synced_at && (
+            <p className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-600" role="status">
+              <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />
+              Mês atual parcial · atualizado em {new Date(panel.synced_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+            </p>
+          )}
         </header>
 
         {/* Saldo + saque */}
@@ -152,11 +158,6 @@ export default function InvestorPanelPage() {
             {panel.available <= 0 && (
               <p className="text-xs text-slate-500 text-center">
                 {panel.pending > 0 ? "Seu saldo está todo em pedidos de saque em análise." : "Ainda não há saldo para sacar."}
-              </p>
-            )}
-            {panel.synced_at && (
-              <p className="text-[11px] text-slate-400 text-center">
-                Valores atualizados em {new Date(panel.synced_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}. O mês atual é parcial.
               </p>
             )}
           </CardContent>
