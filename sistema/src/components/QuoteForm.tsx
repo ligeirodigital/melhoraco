@@ -96,6 +96,7 @@ export default function QuoteForm({
   const [customName, setCustomName] = useState("");
   const [customPrice, setCustomPrice] = useState("");
   const [customCost, setCustomCost] = useState("");
+  const [customIsService, setCustomIsService] = useState(false);
   const [customQty, setCustomQty] = useState("1");
 
   // Parse números no formato BR ("1.340,50" -> 1340.5) ou US ("1340.50")
@@ -117,6 +118,9 @@ export default function QuoteForm({
     const qty = Math.max(1, Number(customQty) || 1);
     if (!name) return toast.error("Informe a descrição do serviço");
     if (!price || price <= 0) return toast.error("Informe um preço válido");
+    if (!cost && !customIsService) {
+      return toast.error("Informe o CMV do item, ou marque 'Serviço sem custo' se não há material.");
+    }
     if (cost > price) {
       return toast.error(`Custo (R$ ${cost.toFixed(2)}) maior que preço (R$ ${price.toFixed(2)}). Verifique o formato — use vírgula para decimais.`);
     }
@@ -138,6 +142,7 @@ export default function QuoteForm({
     setCustomName("");
     setCustomPrice("");
     setCustomCost("");
+    setCustomIsService(false);
     setCustomQty("1");
   };
 
@@ -1108,6 +1113,15 @@ export default function QuoteForm({
                     onChange={(e) => setCustomCost(e.target.value)}
                     className="h-10 rounded-xl bg-white border-none font-bold text-sm flex-1"
                   />
+                  <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 whitespace-nowrap min-h-[44px] px-1">
+                    <input
+                      type="checkbox"
+                      checked={customIsService}
+                      onChange={(e) => setCustomIsService(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    Serviço sem custo
+                  </label>
                   <Input
                     type="number"
                     inputMode="numeric"
