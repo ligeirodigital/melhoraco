@@ -161,11 +161,11 @@ export function ReferralsPanel() {
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {r.status === "usado" && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                <Button size="icon" variant="ghost" onClick={() => copyCode(r.referral_code)} className="h-8 w-8">
+                <Button size="icon" aria-label="Copiar código" variant="ghost" onClick={() => copyCode(r.referral_code)} className="h-8 w-8">
                   <Copy className="w-4 h-4" />
                 </Button>
                 {r.status === "ativo" && (
-                  <Button size="icon" variant="ghost" onClick={() => cancel(r.id)} className="h-8 w-8 text-rose-500">
+                  <Button size="icon" aria-label="Cancelar indicação" variant="ghost" onClick={() => cancel(r.id)} className="h-8 w-8 text-rose-500">
                     <XCircle className="w-4 h-4" />
                   </Button>
                 )}

@@ -244,7 +244,7 @@ export const InvestorModule = () => {
                                 <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover/item:opacity-100 transition-opacity">
                                   <Button 
                                     variant="ghost" 
-                                    size="icon" 
+                                    size="icon" aria-label="Editar lançamento" 
                                     className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900"
                                     onClick={() => handleEditTransaction(t)}
                                   >
@@ -252,7 +252,7 @@ export const InvestorModule = () => {
                                   </Button>
                                   <Button 
                                     variant="ghost" 
-                                    size="icon" 
+                                    size="icon" aria-label="Excluir lançamento" 
                                     className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg hover:bg-rose-50 hover:text-rose-600"
                                     onClick={() => handleDeleteTransaction(t.id)}
                                   >

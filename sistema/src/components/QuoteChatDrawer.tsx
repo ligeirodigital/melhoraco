@@ -156,7 +156,7 @@ export function QuoteChatDrawer({ quoteId, token, clientName }: Props) {
               disabled={loading}
               className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
             />
-            <Button onClick={send} disabled={loading || !input.trim()} size="icon" className="rounded-xl h-10 w-10 shrink-0">
+            <Button onClick={send} disabled={loading || !input.trim()} size="icon" aria-label="Enviar mensagem" className="rounded-xl h-10 w-10 shrink-0">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>

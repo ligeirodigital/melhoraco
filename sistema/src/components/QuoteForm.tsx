@@ -406,7 +406,7 @@ export default function QuoteForm({
   return (
     <div className="w-full max-w-full min-w-0 overflow-x-hidden space-y-6 sm:space-y-10 animate-in fade-in duration-500 pb-28 lg:pb-10">
       <header className="flex items-center gap-3 sm:gap-6">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl h-11 w-11 sm:h-14 sm:w-14 bg-white shadow-sm border border-slate-100 shrink-0 min-h-[44px] min-w-[44px]">
+        <Button variant="ghost" size="icon" aria-label="Voltar" onClick={onBack} className="rounded-2xl h-11 w-11 sm:h-14 sm:w-14 bg-white shadow-sm border border-slate-100 shrink-0 min-h-[44px] min-w-[44px]">
           <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
         <div className="min-w-0 flex-1">
@@ -1006,7 +1006,7 @@ export default function QuoteForm({
                       </div>
 
                       <div className="flex items-center bg-white rounded-xl p-1 shadow-sm border">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => {
+                        <Button variant="ghost" size="icon" aria-label="Diminuir quantidade do grupo" className="h-8 w-8 rounded-lg" onClick={() => {
                           const newItems = [...items];
                           // Diminuir quantidade do último item adicionado neste grupo
                           const lastIdx = group.indices[group.indices.length - 1];
@@ -1014,14 +1014,14 @@ export default function QuoteForm({
                           setItems(newItems);
                         }}>-</Button>
                         <span className="w-10 text-center font-black text-slate-900">{group.quantity}</span>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-primary" onClick={() => {
+                        <Button variant="ghost" size="icon" aria-label="Aumentar quantidade do grupo" className="h-8 w-8 rounded-lg text-primary" onClick={() => {
                           const newItems = [...items];
                           const lastIdx = group.indices[group.indices.length - 1];
                           newItems[lastIdx].quantity += 1;
                           setItems(newItems);
                         }}>+</Button>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-300 hover:text-red-500 transition-colors" onClick={() => {
+                      <Button variant="ghost" size="icon" aria-label="Remover itens do grupo" className="h-10 w-10 text-slate-300 hover:text-red-500 transition-colors" onClick={() => {
                         // Remover todos os itens deste grupo
                         const indicesToRemove = new Set(group.indices);
                         setItems(items.filter((_, i) => !indicesToRemove.has(i)));

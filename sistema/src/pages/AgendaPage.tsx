@@ -58,13 +58,13 @@ export default function AgendaPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => setWeekStart(addDays(weekStart, -7))}>
+            <Button variant="outline" size="icon" aria-label="Semana anterior" onClick={() => setWeekStart(addDays(weekStart, -7))}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <div className="min-w-[200px] text-center font-black uppercase tracking-widest text-xs">
               {format(weekStart, "dd/MM", { locale: ptBR })} — {format(weekEnd, "dd/MM/yyyy", { locale: ptBR })}
             </div>
-            <Button variant="outline" size="icon" onClick={() => setWeekStart(addDays(weekStart, 7))}>
+            <Button variant="outline" size="icon" aria-label="Próxima semana" onClick={() => setWeekStart(addDays(weekStart, 7))}>
               <ChevronRight className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>

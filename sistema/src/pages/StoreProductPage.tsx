@@ -121,10 +121,10 @@ export default function StoreProductPage() {
             <ArrowLeft className="w-4 h-4 mr-1" /> Loja
           </Button>
           <div className="flex-1" />
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={share}>
+          <Button variant="ghost" size="icon" aria-label="Compartilhar" className="text-white hover:bg-white/10" onClick={share}>
             <Share2 className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10"
+          <Button variant="ghost" size="icon" aria-label="Favoritar produto" className="text-white hover:bg-white/10"
             onClick={() => { toggleFavorite(product.id); setFav(getFavorites()); }}>
             <Heart className={`w-4 h-4 ${isFav ? "fill-orange-500 text-orange-500" : ""}`} />
           </Button>
@@ -196,12 +196,12 @@ export default function StoreProductPage() {
             <div className="mt-6 flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Quantidade</span>
               <div className="flex items-center border rounded-lg">
-                <Button size="icon" variant="ghost" className="h-9 w-9"
+                <Button size="icon" aria-label="Diminuir quantidade" variant="ghost" className="h-9 w-9"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}>
                   <Minus className="w-3 h-3" />
                 </Button>
                 <span className="w-8 text-center font-semibold">{qty}</span>
-                <Button size="icon" variant="ghost" className="h-9 w-9"
+                <Button size="icon" aria-label="Aumentar quantidade" variant="ghost" className="h-9 w-9"
                   onClick={() => setQty((q) => q + 1)}>
                   <Plus className="w-3 h-3" />
                 </Button>

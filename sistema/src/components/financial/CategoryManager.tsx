@@ -194,7 +194,7 @@ export const CategoryManager = ({ categories, onAdd, onRemove, open, onOpenChang
 
                     <Button 
                       variant="ghost" 
-                      size="icon" 
+                      size="icon" aria-label="Excluir categoria" 
                       onClick={() => onRemove(cat.id)}
                       className="text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
                     >

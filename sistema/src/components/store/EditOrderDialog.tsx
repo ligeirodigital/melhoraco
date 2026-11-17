@@ -106,14 +106,14 @@ export default function EditOrderDialog({ open, onOpenChange, quoteId, token, on
                   <p className="text-xs text-muted-foreground">{brl(i.unit_price)} · {brl(i.unit_price * i.quantity)}</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQty(i.product_id, -1)}>
+                  <Button size="icon" aria-label="Diminuir quantidade" variant="outline" className="h-8 w-8" onClick={() => updateQty(i.product_id, -1)}>
                     <Minus className="w-3 h-3" />
                   </Button>
                   <span className="w-6 text-center text-sm">{i.quantity}</span>
-                  <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQty(i.product_id, 1)}>
+                  <Button size="icon" aria-label="Aumentar quantidade" variant="outline" className="h-8 w-8" onClick={() => updateQty(i.product_id, 1)}>
                     <Plus className="w-3 h-3" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(i.product_id)}>
+                  <Button size="icon" aria-label="Remover item" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(i.product_id)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>

@@ -617,7 +617,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                         {generatePixPayload(settings?.nubank_pix_key || "thiago@melhoraco.com.br", total, settings?.nubank_pix_name || "JOSE THIAGO OLIVEIRA", "FORTALEZA", quote.order_token || quote.id.slice(0, 6))}
                       </div>
                       <Button 
-                        size="icon" 
+                        size="icon" aria-label="Copiar código PIX" 
                         variant="secondary" 
                         className="shrink-0 h-10 w-10 rounded-lg"
                         onClick={() => {
@@ -636,7 +636,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                     <div className="font-bold text-slate-900 flex items-center gap-2">
                        {settings?.nubank_pix_key || "thiago@melhoraco.com.br"}
                        <Button 
-                        size="icon" 
+                        size="icon" aria-label="Copiar chave PIX" 
                         variant="ghost" 
                         className="h-6 w-6 text-slate-400 hover:text-primary"
                         onClick={() => {

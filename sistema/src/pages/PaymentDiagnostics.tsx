@@ -169,7 +169,7 @@ export default function PaymentDiagnostics() {
     <div className="min-h-screen bg-background p-4 pb-20">
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>

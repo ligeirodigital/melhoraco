@@ -315,14 +315,14 @@ export default function StorePage() {
                             {brl((i.product.price + (i.variant?.price_adjustment ?? 0)))} {priceUnit(i.product.name)}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateQty(key, -1)}>
+                            <Button size="icon" aria-label="Diminuir quantidade" variant="outline" className="h-7 w-7" onClick={() => updateQty(key, -1)}>
                               <Minus className="w-3 h-3" />
                             </Button>
                             <span className="text-sm w-6 text-center">{i.quantity}</span>
-                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateQty(key, 1)}>
+                            <Button size="icon" aria-label="Aumentar quantidade" variant="outline" className="h-7 w-7" onClick={() => updateQty(key, 1)}>
                               <Plus className="w-3 h-3" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-7 w-7 ml-auto text-destructive" onClick={() => removeItem(key)}>
+                            <Button size="icon" aria-label="Remover item" variant="ghost" className="h-7 w-7 ml-auto text-destructive" onClick={() => removeItem(key)}>
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
@@ -576,7 +576,7 @@ export default function StorePage() {
                     <p className="text-sm font-semibold text-orange-700">{coupon.code}</p>
                     <p className="text-xs text-muted-foreground">-{coupon.discount_pct}% aplicado</p>
                   </div>
-                  <Button size="icon" variant="ghost" onClick={removeCoupon}><X className="w-4 h-4" /></Button>
+                  <Button size="icon" aria-label="Remover cupom" variant="ghost" onClick={removeCoupon}><X className="w-4 h-4" /></Button>
                 </div>
               ) : (
                 <div className="flex gap-2">
