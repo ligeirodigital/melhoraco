@@ -36,7 +36,7 @@ export const InventoryGridItem = ({ item, activeTab, onAdjust, onDelete }: Inven
         {onDelete && (
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="icon" aria-label="Excluir produto" 
             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
             onClick={async () => {
               if (await confirmAction({ title: `Excluir ${item.name}?`, confirmLabel: "Excluir", destructive: true })) {

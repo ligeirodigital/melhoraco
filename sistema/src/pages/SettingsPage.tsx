@@ -850,7 +850,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-5">
             <Button 
               variant="ghost" 
-              size="icon" 
+              size="icon" aria-label="Voltar" 
               onClick={() => navigate("/")} 
               className="rounded-2xl h-14 w-14 bg-card shadow-sm border border-border hover:bg-muted transition-all active:scale-95"
             >
@@ -1146,7 +1146,7 @@ export default function SettingsPage() {
                               </div>
                             </DialogContent>
                           </Dialog>
-                          <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all" onClick={() => deleteProduct(p.id)}>
+                          <Button variant="ghost" size="icon" aria-label="Excluir produto" className="h-12 w-12 rounded-2xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all" onClick={() => deleteProduct(p.id)}>
                             <Trash2 className="w-5 h-5" />
                           </Button>
                         </div>
@@ -1170,7 +1170,7 @@ export default function SettingsPage() {
                                 </div>
                                 <Button 
                                   variant="ghost" 
-                                  size="icon" 
+                                  size="icon" aria-label="Excluir variação" 
                                   className="h-7 w-7 rounded-lg text-slate-200 hover:text-red-500 opacity-0 group-hover/variant:opacity-100 transition-all" 
                                   onClick={() => deleteVariant(v.id)}
                                 >
@@ -1452,14 +1452,14 @@ export default function SettingsPage() {
                                    {editingEmail === item.email ? (
                                       <>
                                          <Button 
-                                            size="icon" 
+                                            size="icon" aria-label="Salvar funcionário" 
                                             className="h-10 w-10 rounded-xl bg-green-500 hover:bg-green-600 text-white"
                                             onClick={() => saveEmployeeEdit(item.email)}
                                          >
                                             <Check className="w-5 h-5" />
                                          </Button>
                                          <Button 
-                                            size="icon" 
+                                            size="icon" aria-label="Cancelar edição" 
                                             variant="ghost"
                                             className="h-10 w-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200"
                                             onClick={cancelEdit}
@@ -1489,7 +1489,7 @@ export default function SettingsPage() {
                                             
                                             <Button 
                                                variant="ghost" 
-                                               size="icon" 
+                                               size="icon" aria-label="Editar funcionário" 
                                                className="h-10 w-10 rounded-xl text-slate-300 hover:text-primary hover:bg-primary/5 transition-all"
                                                onClick={() => handleEditEmployee(item)}
                                             >
@@ -1499,7 +1499,7 @@ export default function SettingsPage() {
                                             {item.email !== 'melhoracooficial@gmail.com' && (
                                               <Button 
                                                 variant="ghost" 
-                                                size="icon" 
+                                                size="icon" aria-label="Remover acesso" 
                                                 className="h-10 w-10 rounded-xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all"
                                                 onClick={() => removeAllowedEmail(item.email)}
                                               >

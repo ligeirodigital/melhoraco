@@ -55,12 +55,12 @@ export default function ProductDetailModal({ product, open, onOpenChange, onAdd 
             <div className="mt-auto pt-6 space-y-3">
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Quantidade:</span>
-                <Button size="icon" variant="outline" className="h-8 w-8"
+                <Button size="icon" aria-label="Diminuir quantidade" variant="outline" className="h-8 w-8"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}>
                   <Minus className="w-3 h-3" />
                 </Button>
                 <span className="w-8 text-center font-medium">{qty}</span>
-                <Button size="icon" variant="outline" className="h-8 w-8"
+                <Button size="icon" aria-label="Aumentar quantidade" variant="outline" className="h-8 w-8"
                   onClick={() => setQty((q) => q + 1)}>
                   <Plus className="w-3 h-3" />
                 </Button>

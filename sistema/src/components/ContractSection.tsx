@@ -162,7 +162,7 @@ export function ContractSection({ quote, logoUrl, signatureUrl }: Props) {
                 {c.signed_at && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                 {c.pdf_url && (
                   <a href={c.pdf_url} target="_blank" rel="noreferrer">
-                    <Button size="icon" variant="ghost" className="h-8 w-8">
+                    <Button size="icon" aria-label="Baixar contrato" variant="ghost" className="h-8 w-8">
                       <Download className="w-4 h-4" />
                     </Button>
                   </a>

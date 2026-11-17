@@ -85,7 +85,7 @@ export const CashFlowTable = memo(({ transactions, formatCurrency, onEdit, onDel
             <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon" aria-label="Editar lançamento"
                 disabled={t.source !== 'cashflow'}
                 onClick={() => onEdit(t)}
                 className="h-11 w-11 sm:h-9 sm:w-9 rounded-xl hover:bg-slate-100"
@@ -94,7 +94,7 @@ export const CashFlowTable = memo(({ transactions, formatCurrency, onEdit, onDel
               </Button>
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon" aria-label="Excluir lançamento"
                 disabled={t.source !== 'cashflow'}
                 onClick={() => onDelete(t.id, t.description, t.source !== 'cashflow')}
                 className="h-11 w-11 sm:h-9 sm:w-9 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600"

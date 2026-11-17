@@ -120,7 +120,7 @@ export const CogsAudit = ({ quotes, formatCurrency }: CogsAuditProps) => {
                     <TableCell>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
+                        size="icon" aria-label="Expandir ou recolher pedido" 
                         onClick={() => toggleExpand(q.id)}
                         className="h-8 w-8 rounded-lg"
                       >
