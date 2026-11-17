@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { reportError } from "@/lib/reportError";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STATUSES = ["agendado", "confirmado", "em_andamento", "concluido", "cancelado"] as const;
 
@@ -124,7 +125,7 @@ export default function AgendaPage() {
         <div className="bg-white rounded-3xl border border-border shadow-sm p-6 space-y-4">
           <h2 className="font-black text-lg">Detalhes da semana</h2>
           {items.isLoading ? (
-            <p className="text-slate-400">Carregando...</p>
+            <div className="space-y-2" role="status" aria-label="Carregando instalações"><Skeleton className="h-12 rounded-xl" /><Skeleton className="h-12 rounded-xl" /></div>
           ) : (items.data || []).length === 0 ? (
             <p className="text-slate-400 text-sm">Nenhuma instalação agendada nesta semana.</p>
           ) : (
