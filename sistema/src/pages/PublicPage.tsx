@@ -312,6 +312,24 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
   // evitando divergência com getQuoteTotal.
   const discountValue = Math.max(0, subtotal + deliveryFee + installationFee - Number(total || 0));
 
+  // Gera o link de checkout InfinityPay. Usado tanto antes da aprovação quanto depois (pedido aprovado sem pagamento).
+  const startInfinityPay = async () => {
+    try {
+      toast.loading("Gerando link de pagamento...", { id: "ip-link" });
+      const { data, error } = await supabase.functions.invoke(
+        `${FN_PREFIX}infinitypay-create-link`,
+        { body: { quoteId: quote.id, redirectUrl: `${appUrl()}/pedido/${quote.id}/sucesso` } },
+      );
+      toast.dismiss("ip-link");
+      if (error) throw error;
+      if (!data?.url) throw new Error("Link não retornado");
+      window.location.href = data.url;
+    } catch (e) {
+      toast.dismiss("ip-link");
+      reportError(e, { scope: "public-quote/infinitypay", fallbackMessage: "Falha ao gerar link InfinityPay" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Slim brand bar */}
@@ -677,22 +695,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                 <>
                   {/* Primary CTA — Card */}
                   <Button
-                    onClick={async () => {
-                      try {
-                        toast.loading("Gerando link de pagamento...", { id: "ip-link" });
-                        const { data, error } = await supabase.functions.invoke(
-                          `${FN_PREFIX}infinitypay-create-link`,
-                          { body: { quoteId: quote.id, redirectUrl: `${appUrl()}/pedido/${quote.id}/sucesso` } },
-                        );
-                        toast.dismiss("ip-link");
-                        if (error) throw error;
-                        if (!data?.url) throw new Error("Link não retornado");
-                        window.location.href = data.url;
-                      } catch (e) {
-                        toast.dismiss("ip-link");
-                        reportError(e, { scope: "public-quote/infinitypay", fallbackMessage: "Falha ao gerar link InfinityPay" });
-                      }
-                    }}
+                    onClick={startInfinityPay}
                     className="w-full h-14 rounded-lg font-bold gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-white shadow-lg uppercase tracking-wide text-sm"
                   >
                     <CreditCard className="w-5 h-5" />
@@ -769,6 +772,21 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                 )}
               </div>
 
+
+              {quote.payment_status !== "paid" && total > 0 && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-3">
+                  <p className="font-black text-slate-900 text-sm">Pagamento pendente</p>
+                  <p className="text-xs text-slate-500">Você pode pagar agora com cartão pelo link seguro da InfinityPay.</p>
+                  <Button
+                    onClick={startInfinityPay}
+                    className="w-full h-14 rounded-lg font-bold gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-white shadow-lg uppercase tracking-wide text-sm"
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    Pagar com Cartão
+                    <span className="text-[10px] font-medium opacity-70 ml-1">• InfinityPay</span>
+                  </Button>
+                </div>
+              )}
 
               <LazyPdfButton
                 fileName={`OS_${quote.order_token || quote.id.slice(0,8)}.pdf`}
