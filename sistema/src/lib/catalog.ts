@@ -40,3 +40,8 @@ export function itemCatalog(item: { product?: CatalogMetadata | null; products?:
 export function countPieces(value: string): number {
   return (value.match(/[0-9A-Za-z]/g) ?? []).length;
 }
+
+/** Prazo mostrado na LP: 15 cm sai em 24h; os demais tamanhos são feitos sob encomenda. */
+export function sizeLeadTime(name?: string | null): string {
+  return sizeLabel(name) === "15 cm" ? "Pronto em 24h" : "7 dias úteis · pagamento no pedido";
+}

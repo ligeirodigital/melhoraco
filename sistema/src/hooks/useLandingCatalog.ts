@@ -26,3 +26,14 @@ export function useLandingCatalog(title: string) {
   const { data: products = [] } = useQuery({ queryKey: CATALOG_KEY, queryFn: loadCatalog });
   return matchLandingProduct(products, title);
 }
+
+/** Tamanhos de número (15/20/30 cm...) oferecidos na LP, sem a versão "só face". */
+export function landingSizes(products: StoreProduct[]) {
+  const cm = (p: StoreProduct) => Number(p.name.match(/(\d+)\s*cm/i)?.[1] ?? 0);
+  return products.filter(p => cm(p) > 0 && !/face/i.test(p.name)).sort((a, b) => cm(a) - cm(b));
+}
+
+export function useLandingSizes() {
+  const { data: products = [] } = useQuery({ queryKey: CATALOG_KEY, queryFn: loadCatalog });
+  return landingSizes(products);
+}
