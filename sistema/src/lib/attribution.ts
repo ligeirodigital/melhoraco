@@ -34,5 +34,5 @@ export function leadOriginLabel(quote: { lead_origin?: string | null; utm_source
   if (quote.lead_origin) return quote.lead_origin;
   if (quote.gclid) return "Google Ads";
   if (/paid|cpc|ads/i.test(quote.utm_medium || "") && /meta|facebook|instagram|fb|ig/i.test(quote.utm_source || "")) return "Meta Ads";
-  return quote.utm_source || (quote.fbclid ? "Meta" : quote.source === "store" ? "Loja" : "Manual");
+  return quote.utm_source || (quote.fbclid ? "Meta" : quote.source === "store" ? "Loja" : quote.source === "lp" ? "Landing page" : "Manual");
 }
