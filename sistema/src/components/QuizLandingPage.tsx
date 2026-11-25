@@ -31,6 +31,7 @@ import { useUTM } from "@/hooks/useUTM";
 import { reportError } from "@/lib/reportError";
 import { newEventId, trackMetaEvent } from "@/lib/metaPixel";
 import { openTrackedWhatsApp, trackWhatsAppClick, type PageTrackingContext } from "@/lib/publicTracking";
+import { appUrl } from "@/lib/appUrl";
 
 interface QuizLandingPageProps {
   data: {
@@ -58,6 +59,9 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
   const [submitError, setSubmitError] = useState("");
   const submitting = useRef(false);
   const leadEventId = useRef(newEventId());
+  // Link do orçamento criado no sistema (portal do cliente). Fica nulo se a
+  // criação falhar: o lead continua salvo e o WhatsApp segue sem o link.
+  const [quoteUrl, setQuoteUrl] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -156,6 +160,39 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
       if (error && error.code !== "23505") throw error;
       trackMetaEvent("Lead", { value: total_value, currency: "BRL", num_items: formData.quantity }, leadEventId.current);
 
+      // Cria o orçamento de verdade no sistema (cliente + itens), com a origem
+      // da campanha. Uma falha aqui não perde o lead, que já foi salvo acima.
+      let link: string | null = quoteUrl;
+      if (!link && product?.id) {
+        try {
+          const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+          const address = [formData.street, formData.neighborhood, formData.city].filter(Boolean).join(", ");
+          const { data: order, error: orderError } = await supabase.rpc("create_public_order", {
+            payload: {
+              source: "lp",
+              customer: {
+                name: fullName,
+                phone: formData.whatsapp.replace(/\D/g, ""),
+                cep: formData.cep,
+                address,
+                address_number: formData.number,
+                address_complement: formData.complement,
+                notes: `Número(s) desejado(s): ${formData.desired_number}\nOrigem: LP ${window.location.pathname}`,
+              },
+              attribution: utm,
+              items: [{ product_id: product.id, quantity: formData.quantity }],
+            } as any,
+          });
+          if (orderError) throw orderError;
+          const res = order as { ok?: boolean; quote_id?: string; token?: string; reason?: string } | null;
+          if (!res?.ok || !res.quote_id || !res.token) throw new Error(res?.reason || "order_not_created");
+          link = `${appUrl()}/p/q_${res.quote_id}_${res.token}`;
+          setQuoteUrl(link);
+        } catch (orderErr) {
+          reportError(orderErr, { scope: "quiz-create-quote", silent: true, extra: { eventId: leadEventId.current } });
+        }
+      }
+
       // WhatsApp Message
       const message = `Olá! Vim pelo site da Melhoraço.
 
@@ -174,7 +211,7 @@ Endereço:
 • Número: ${formData.number}
 • Bairro: ${formData.neighborhood}
 • Cidade: ${formData.city}
-
+${link ? `\nMeu orçamento: ${link}\n` : ""}
 Quero confirmar meu pedido.`;
 
       const phone = data.whatsapp_number?.replace(/\D/g, "") || "5585999999999";
@@ -558,7 +595,7 @@ Quero confirmar meu pedido.`;
 Dados:
 • Nome: ${formData.first_name} ${formData.last_name}
 • WhatsApp: ${formData.whatsapp}
-
+${quoteUrl ? `\nMeu orçamento: ${quoteUrl}\n` : ""}
 Quero confirmar meu pedido.`;
 
                 openTrackedWhatsApp(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, data.trackingContext);
@@ -568,6 +605,12 @@ Quero confirmar meu pedido.`;
               <MessageSquare className="w-8 h-8 fill-white/20" />
               CHAMAR NO WHATSAPP
             </Button>
+
+            {quoteUrl && (
+              <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-base border-2">
+                <a href={quoteUrl} target="_blank" rel="noopener noreferrer">VER MEU ORÇAMENTO</a>
+              </Button>
+            )}
 
             <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
               Aguardamos sua mensagem para iniciar a produção.
