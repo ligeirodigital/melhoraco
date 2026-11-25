@@ -6,107 +6,177 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Atendimento Melhoraço</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=Figtree:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: uma coluna estreita, roteiro de cima para baixo; placas de inox como blocos de mensagem */
+/* Layout: coluna única de celular; barra fixa no topo (busca + atalhos) e barra fixa embaixo com o total do orçamento */
 :root{
-  --bg:#eef1f3; --surface:#ffffff; --steel:#d9dfe3; --line:#c9d1d6;
-  --fg:#1b2329; --muted:#5d6b75; --accent:#0d6b5e; --accent-fg:#ffffff; --accent-soft:#dcefeb;
-  --warn:#9a5a00;
+  --bg:#eef1f3; --surface:#ffffff; --steel:#dfe4e8; --line:#cdd5da;
+  --fg:#1a2228; --muted:#5b6973; --accent:#0d6b5e; --accent-fg:#ffffff; --accent-soft:#dcefeb;
+  --warn:#94570a; --warn-soft:#fbeedb;
   --display:"Saira Condensed","Arial Narrow",sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111618; --surface:#1a2125; --steel:#263036; --line:#2f3a41;
-  --fg:#e6ecef; --muted:#93a2ab; --accent:#3fbfa8; --accent-fg:#06201b; --accent-soft:#18302c; --warn:#e0a54a; color-scheme:dark}}
+  --bg:#0f1416; --surface:#182024; --steel:#222c31; --line:#2e3a41;
+  --fg:#e6ecef; --muted:#93a2ab; --accent:#45c4ad; --accent-fg:#05201b; --accent-soft:#163029; --warn:#e6ab55; --warn-soft:#33270f; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111618; --surface:#1a2125; --steel:#263036; --line:#2f3a41;
-  --fg:#e6ecef; --muted:#93a2ab; --accent:#3fbfa8; --accent-fg:#06201b; --accent-soft:#18302c; --warn:#e0a54a; color-scheme:dark}
+  --bg:#0f1416; --surface:#182024; --steel:#222c31; --line:#2e3a41;
+  --fg:#e6ecef; --muted:#93a2ab; --accent:#45c4ad; --accent-fg:#05201b; --accent-soft:#163029; --warn:#e6ab55; --warn-soft:#33270f; color-scheme:dark}
 *{box-sizing:border-box}
+html{scroll-padding-top:130px}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
-header h1{font-family:var(--display);font-weight:700;font-size:2.1rem;letter-spacing:.02em;margin:0;line-height:1}
-header p{margin:6px 0 0;color:var(--muted)}
-.promo{display:inline-flex;gap:8px;align-items:baseline;margin-top:10px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:6px;font-weight:600;font-size:.9rem}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.in{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .in{display:grid;gap:8px;padding-block:10px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:1.35rem;white-space:nowrap;letter-spacing:.02em;margin:0;line-height:1}
+.promo{font-size:.82rem;font-weight:600;color:var(--accent);white-space:nowrap}
 .promo s{color:var(--muted);font-weight:400}
-section{display:grid;gap:12px}
+.search{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex-shrink:0;font-size:.82rem;font-weight:600;text-decoration:none;color:var(--fg);background:var(--steel);padding:5px 11px;border-radius:999px}
+.chips a:hover{background:var(--accent-soft);color:var(--accent)}
+main.in{display:grid;gap:30px;padding-block:18px 120px}
+section{display:grid;gap:10px}
 .step{display:flex;gap:10px;align-items:baseline}
-.step b{font-family:var(--display);font-size:1.5rem;color:var(--accent);line-height:1;min-width:1.2em}
+.step b{font-family:var(--display);font-size:1.4rem;color:var(--accent);line-height:1;min-width:1.3em}
 .step h2{font-family:var(--display);font-weight:600;font-size:1.35rem;margin:0;letter-spacing:.02em;text-wrap:balance}
-.hint{color:var(--muted);font-size:.88rem;margin:-4px 0 0}
+.hint{color:var(--muted);font-size:.86rem;margin:-4px 0 0}
+.grid-msgs{display:grid;gap:10px}
 .msg{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.msg-label{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;background:var(--steel);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg-label{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 8px 7px 12px;background:var(--steel);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .msg pre{margin:0;padding:12px;white-space:pre-wrap;word-break:break-word;font-family:var(--body);font-size:.95rem;min-width:0}
-button.copy{font:600 .85rem var(--body);background:var(--accent);color:var(--accent-fg);border:0;border-radius:6px;padding:7px 14px;cursor:pointer;flex-shrink:0;text-transform:none;letter-spacing:0}
-button.copy:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.msg.sent .msg-label span::after{content:" · enviada";color:var(--accent)}
+button{font:inherit;cursor:pointer}
+button.copy{font-weight:600;font-size:.85rem;background:var(--accent);color:var(--accent-fg);border:0;border-radius:6px;padding:7px 14px;flex-shrink:0}
 button.copy.ok{background:var(--fg);color:var(--bg)}
+button:focus-visible,input:focus-visible,summary:focus-visible,.chips a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .calc{display:grid;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
-.calc label{font-weight:600;font-size:.9rem}
-.plate{font-family:var(--display);font-weight:700;font-size:2.6rem;letter-spacing:.08em;width:100%;padding:6px 14px;border:1px solid var(--line);border-radius:8px;color:var(--fg);background:linear-gradient(135deg,var(--steel),var(--surface) 55%,var(--steel))}
-.sizes{display:flex;gap:8px;flex-wrap:wrap}
-.sizes label{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-weight:600}
-.sizes label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-.sizes input{accent-color:var(--accent)}
-.figs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-variant-numeric:tabular-nums}
-.figs div{display:grid;gap:2px}
-.figs span{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.figs strong{font-family:var(--display);font-size:1.4rem}
-.figs .old strong{text-decoration:line-through;color:var(--muted)}
-.figs .new strong{color:var(--accent)}
-.frete{font-size:.9rem;font-weight:600}
-.frete.free{color:var(--accent)} .frete.miss{color:var(--warn)}
+#items{display:grid;gap:12px}
+.item{display:grid;grid-template-columns:1fr auto;gap:8px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.item .plate{grid-column:1/-1}
+.plate{font-family:var(--display);font-weight:700;font-size:2.3rem;letter-spacing:.08em;width:100%;padding:4px 14px;border:1px solid var(--line);border-radius:8px;color:var(--fg);background:linear-gradient(135deg,var(--steel),var(--surface) 55%,var(--steel))}
+.opts{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--fg);padding:7px 11px;font-weight:600;font-size:.88rem}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.rm{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 10px;align-self:start}
+.item-info{grid-column:1/-1;font-size:.86rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.item-info .tag{font-weight:700;color:var(--warn)}
+.add{border:1px dashed var(--accent);background:transparent;color:var(--accent);border-radius:8px;padding:9px;font-weight:600}
+.extras{display:grid;gap:10px}
+.check{display:flex;gap:10px;align-items:center;font-weight:600}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.letr{display:grid;grid-template-columns:1fr 110px;gap:8px}
+.field{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);width:100%;min-width:0}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-variant-numeric:tabular-nums;padding-top:4px}
+.sum div{display:grid;gap:2px}
+.sum span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sum strong{font-family:var(--display);font-size:1.45rem}
+.sum .old strong{text-decoration:line-through;color:var(--muted)}
+.sum .new strong{color:var(--accent)}
+.flags{display:flex;flex-wrap:wrap;gap:6px}
+.flag{font-size:.8rem;font-weight:600;padding:4px 9px;border-radius:6px;background:var(--accent-soft);color:var(--accent)}
+.flag.w{background:var(--warn-soft);color:var(--warn)}
 details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
 summary{padding:12px 14px;font-weight:600;cursor:pointer}
 .cfg{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px}
 .cfg div{display:grid;gap:4px;min-width:0}
-.cfg .full{grid-column:1/-1}
 .cfg label{font-size:.8rem;color:var(--muted)}
-.cfg input,.calc input{font:inherit}
-.cfg input{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);width:100%}
-.grid-msgs{display:grid;gap:10px}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem;background:var(--surface)}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
-th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem;background:var(--surface)}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
-th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--steel)}
-td.p{font-weight:600;color:var(--accent)}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--steel)}
+td.p{font-weight:700;color:var(--accent)}
 tr:last-child td{border-bottom:0}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.empty{color:var(--muted);text-align:center;padding:20px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bar .in{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+.bar .t{display:grid;line-height:1.15;min-width:0}
+.bar .t small{color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .t strong{font-family:var(--display);font-size:1.6rem;color:var(--accent)}
+.bar button.copy{padding:11px 18px;font-size:.95rem}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
 
 
-<div class="wrap">
-  <header>
-    <h1>Atendimento Melhoraço</h1>
-    <p>Roteiro de WhatsApp para quem chega pedindo números residenciais. Toque em <strong>Copiar</strong> e cole na conversa.</p>
-    <div class="promo">15cm: <s id="hdrOld">R$90</s> <span id="hdrNew">R$59</span> por dígito</div>
-  </header>
+<header class="top">
+  <div class="in">
+    <div class="brand">
+      <h1>Atendimento Melhoraço</h1>
+      <div class="promo">15cm <s id="hdrOld">R$90</s> <span id="hdrNew">R$59</span></div>
+    </div>
+    <input id="q" class="search" type="search" placeholder="Buscar resposta: preto, instala, endereço, caro…" autocomplete="off" aria-label="Buscar resposta">
+    <nav class="chips" aria-label="Seções">
+      <a href="#orcamento">Orçamento</a>
+      <a href="#abertura">Abertura</a>
+      <a href="#sem-resposta">Sem resposta</a>
+      <a href="#fechamento">Fechamento</a>
+      <a href="#sumiu">Sumiu</a>
+      <a href="#pedido">Pedido pago</a>
+      <a href="#pos-venda">Pós-venda</a>
+      <a href="#duvidas">Dúvidas</a>
+      <a href="#tabela">Tabela</a>
+    </nav>
+  </div>
+</header>
 
-  <details id="cfgBox">
-    <summary>Ajustes da promoção (prazo, Pix, validade)</summary>
+<main class="in">
+  <section id="orcamento">
+    <div class="step"><b>$</b><h2>Orçamento</h2></div>
+    <p class="hint">Digite o número que o cliente mandou. Mais de uma casa ou tamanho? Toque em <strong>Adicionar outro número</strong>.</p>
+    <div class="calc">
+      <div id="items"></div>
+      <button class="add" id="addItem" type="button">+ Adicionar outro número</button>
+      <div class="extras">
+        <label class="check"><input type="checkbox" id="inst"> Instalação em Fortaleza (R$100)</label>
+        <label class="check"><input type="checkbox" id="temLetr"> Letreiro personalizado</label>
+        <div class="letr" id="letrBox" hidden>
+          <input class="field" id="letrDesc" type="text" placeholder="O que vai escrito" aria-label="Texto do letreiro">
+          <input class="field" id="letrVal" type="number" inputmode="numeric" placeholder="R$ valor" aria-label="Valor do letreiro">
+        </div>
+      </div>
+      <div class="sum">
+        <div class="old" id="sOldBox"><span>De</span><strong id="sOld">R$0</strong></div>
+        <div class="new"><span>Total</span><strong id="sTot">R$0</strong></div>
+        <div><span>3x sem juros</span><strong id="sParc">R$0</strong></div>
+      </div>
+      <div class="flags" id="flags"></div>
+    </div>
+    <div class="grid-msgs"><div class="msg" data-tpl="orcamento"></div></div>
+  </section>
+
+  <details id="ajustes">
+    <summary>Ajustes (preço, prazo, estoque, Pix)</summary>
     <div class="cfg">
-      <div><label for="cPreco">Preço promo (R$)</label><input id="cPreco" type="number" inputmode="numeric" value="59"></div>
-      <div><label for="cCheio">Preço cheio (R$)</label><input id="cCheio" type="number" inputmode="numeric" value="90"></div>
-      <div><label for="cPrazo15">Prazo 15cm (em estoque)</label><input id="cPrazo15" type="text" value="24 horas"></div>
-      <div><label for="cPrazoLongo">Prazo outros tamanhos / em falta</label><input id="cPrazoLongo" type="text" value="7 dias úteis"></div>
-      <div><label for="cFalta">Em falta no 15cm</label><input id="cFalta" type="text" value="3"></div>
-      <div><label for="cValidade">Promoção válida até</label><input id="cValidade" type="text" value="sexta"></div>
-      <div><label for="cPix">Chave Pix</label><input id="cPix" type="text" value="85992753337"></div>
+      <div><label for="cPreco">Promo 15cm (R$/dígito)</label><input class="field" id="cPreco" type="number" inputmode="numeric" value="59"></div>
+      <div><label for="cCheio">Preço cheio 15cm</label><input class="field" id="cCheio" type="number" inputmode="numeric" value="90"></div>
+      <div><label for="cP20">20cm (R$/dígito)</label><input class="field" id="cP20" type="number" inputmode="numeric" value="120"></div>
+      <div><label for="cP30">30cm (R$/dígito)</label><input class="field" id="cP30" type="number" inputmode="numeric" value="180"></div>
+      <div><label for="cPrazo15">Prazo 15cm em estoque</label><input class="field" id="cPrazo15" type="text" value="24 horas"></div>
+      <div><label for="cPrazoLongo">Prazo sob medida / em falta</label><input class="field" id="cPrazoLongo" type="text" value="7 dias úteis"></div>
+      <div><label for="cFalta">Dígitos em falta (15cm)</label><input class="field" id="cFalta" type="text" value="3" placeholder="ex.: 38"></div>
+      <div><label for="cValidade">Promoção até (opcional)</label><input class="field" id="cValidade" type="text" placeholder="ex.: domingo"></div>
+      <div><label for="cPix">Chave Pix</label><input class="field" id="cPix" type="text" value="85992753337"></div>
     </div>
   </details>
 
-  <section>
+  <section id="abertura">
     <div class="step"><b>1</b><h2>Abertura</h2></div>
-    <p class="hint">Mande logo que o cliente chamar, junto com o vídeo.</p>
-    <div class="msg" data-tpl="abertura"></div>
+    <p class="hint">Assim que o cliente chamar, junto com o vídeo.</p>
+    <div class="grid-msgs"><div class="msg" data-tpl="abertura"></div></div>
   </section>
 
-  <section>
-    <div class="step"><b>1b</b><h2>Não respondeu à saudação</h2></div>
-    <p class="hint">Mande na ordem. Peça só o número da casa, sem falar de preço ainda.</p>
+  <section id="sem-resposta">
+    <div class="step"><b>2</b><h2>Não respondeu à abertura</h2></div>
+    <p class="hint">Na ordem. Peça só o número da casa, sem falar de preço.</p>
     <div class="grid-msgs">
       <div class="msg" data-tpl="s1"></div>
       <div class="msg" data-tpl="s2"></div>
@@ -114,40 +184,18 @@ tr:last-child td{border-bottom:0}
     </div>
   </section>
 
-  <section>
-    <div class="step"><b>2</b><h2>Orçamento pronto</h2></div>
-    <p class="hint">Digite o número da casa que o cliente mandou. A mensagem se monta sozinha.</p>
-    <div class="calc">
-      <label for="casa">Número da casa</label>
-      <input id="casa" class="plate" type="text" inputmode="text" autocomplete="off" value="245" maxlength="12">
-      <div class="sizes" role="radiogroup" aria-label="Tamanho">
-        <label><input type="radio" name="tam" id="t15" value="15" checked> 15cm</label>
-        <label><input type="radio" name="tam" id="t20" value="20"> 20cm · R$120</label>
-        <label><input type="radio" name="tam" id="t30" value="30"> 30cm · R$180</label>
-      </div>
-      <div class="figs">
-        <div><span>Dígitos</span><strong id="fDig">3</strong></div>
-        <div class="old"><span>De</span><strong id="fOld">R$270</strong></div>
-        <div class="new"><span>Por</span><strong id="fNew">R$177</strong></div>
-      </div>
-      <div id="fFrete" class="frete"></div>
-      <div id="fPrazo" class="frete"></div>
-    </div>
-    <div class="msg" data-tpl="orcamento"></div>
-  </section>
-
-  <section>
+  <section id="fechamento">
     <div class="step"><b>3</b><h2>Fechamento</h2></div>
-    <p class="hint">Quando ele escolher Pix ou cartão.</p>
+    <p class="hint">Quando ele escolher Pix ou cartão. O total vem do orçamento.</p>
     <div class="grid-msgs">
       <div class="msg" data-tpl="pix"></div>
       <div class="msg" data-tpl="cartao"></div>
     </div>
   </section>
 
-  <section>
-    <div class="step"><b>4</b><h2>Cliente sumiu</h2></div>
-    <p class="hint">Mande na ordem. Se ele não responder à última, encerre.</p>
+  <section id="sumiu">
+    <div class="step"><b>4</b><h2>Recebeu o orçamento e sumiu</h2></div>
+    <p class="hint">Na ordem. Sem resposta na última, encerre.</p>
     <div class="grid-msgs">
       <div class="msg" data-tpl="f1"></div>
       <div class="msg" data-tpl="f2"></div>
@@ -155,202 +203,327 @@ tr:last-child td{border-bottom:0}
     </div>
   </section>
 
-  <section>
-    <div class="step"><b>5</b><h2>Depois da entrega</h2></div>
-    <p class="hint">Mande no mesmo dia da entrega. Se não avaliar, mande o lembrete 2 dias depois.</p>
+  <section id="pedido">
+    <div class="step"><b>5</b><h2>Pedido pago</h2></div>
+    <p class="hint">Confirme o pagamento e avise quando sair. Cliente informado não cancela.</p>
+    <div class="grid-msgs">
+      <div class="msg" data-tpl="pago"></div>
+      <div class="msg" data-tpl="saiu"></div>
+    </div>
+  </section>
+
+  <section id="pos-venda">
+    <div class="step"><b>6</b><h2>Depois da entrega</h2></div>
+    <p class="hint">No dia da entrega. Sem avaliação, lembrete 2 dias depois.</p>
     <div class="grid-msgs">
       <div class="msg" data-tpl="pos1"></div>
       <div class="msg" data-tpl="pos2"></div>
     </div>
   </section>
 
-  <section>
+  <section id="duvidas">
     <div class="step"><b>?</b><h2>Dúvidas e objeções</h2></div>
     <div class="grid-msgs">
+      <div class="msg" data-tpl="confia"></div>
       <div class="msg" data-tpl="endereco"></div>
-      <div class="msg" data-tpl="instala"></div>
-      <div class="msg" data-tpl="instala_fora"></div>
-      <div class="msg" data-tpl="letras"></div>
-      <div class="msg" data-tpl="preto"></div>
-      <div class="msg" data-tpl="na_entrega"></div>
+      <div class="msg" data-tpl="tamanho"></div>
       <div class="msg" data-tpl="caro"></div>
       <div class="msg" data-tpl="depois"></div>
-      <div class="msg" data-tpl="nao_sei"></div>
+      <div class="msg" data-tpl="na_entrega"></div>
+      <div class="msg" data-tpl="instala"></div>
+      <div class="msg" data-tpl="instala_fora"></div>
+      <div class="msg" data-tpl="preto"></div>
+      <div class="msg" data-tpl="enferruja"></div>
+      <div class="msg" data-tpl="letras"></div>
     </div>
   </section>
 
-  <section>
-    <div class="step"><b>$</b><h2>Tabela rápida</h2></div>
-    <div class="tbl"><table><thead><tr><th>Dígitos</th><th>15cm de</th><th>15cm por</th><th>Economia</th><th>20cm</th><th>30cm</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <section id="tabela">
+    <div class="step"><b>#</b><h2>Tabela rápida</h2></div>
+    <div class="tbl"><table><thead><tr><th>Dígitos</th><th>15cm de</th><th>15cm por</th><th>20cm</th><th>30cm</th></tr></thead><tbody id="tb"></tbody></table></div>
   </section>
+  <p class="empty" id="noRes" hidden>Nenhuma resposta com esse termo.</p>
+</main>
+
+<div class="bar">
+  <div class="in">
+    <div class="t"><small id="barInfo">Casa 245 · 15cm inox</small><strong id="barTot">R$177</strong></div>
+    <button class="copy" type="button" id="barCopy">Copiar orçamento</button>
+  </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const fields = ["cPreco","cCheio","cPrazo15","cPrazoLongo","cFalta","cValidade","cPix"];
-try{ const s = JSON.parse(localStorage.getItem("melhoraco-cfg")||"{}"); fields.forEach(f=>{ if(s[f]!=null && s[f]!=="") $(f).value=s[f]; }); }catch(e){}
-const brl = n => "R$" + Math.round(n).toLocaleString("pt-BR");
-const parc = n => { const v=n/3; return "3x de R$" + (Number.isInteger(v) ? v.toLocaleString("pt-BR") : v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})) + " sem juros"; };
-function cfg(){ return { preco:+$("cPreco").value||0, cheio:+$("cCheio").value||0,
-  prazo15:$("cPrazo15").value.trim()||"[prazo]", prazoLongo:$("cPrazoLongo").value.trim()||"[prazo]", falta:$("cFalta").value.replace(/[^0-9A-Za-z]/g,"").toUpperCase(), validade:$("cValidade").value.trim()||"[data]", pix:$("cPix").value.trim()||"[chave Pix]" }; }
+const fields = ["cPreco","cCheio","cP20","cP30","cPrazo15","cPrazoLongo","cFalta","cValidade","cPix"];
+try{ const s = JSON.parse(localStorage.getItem("melhoraco-cfg2")||"{}"); fields.forEach(f=>{ if(s[f]!=null) $(f).value=s[f]; }); }catch(e){}
 
+const fmt = (v,dec) => v.toLocaleString("pt-BR", dec ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0});
+const brl = n => "R$" + fmt(Math.round(n));
+const parcV = n => { const v=Math.round(n/3*100)/100; return "R$" + fmt(v, !Number.isInteger(v)); };
+const parc = n => "3x de " + parcV(n) + " sem juros";
+const digitos = s => (s.match(/[0-9A-Za-z]/g)||[]).length;
+
+function cfg(){ return {
+  preco:+$("cPreco").value||0, cheio:+$("cCheio").value||0, p20:+$("cP20").value||0, p30:+$("cP30").value||0,
+  prazo15:$("cPrazo15").value.trim()||"24 horas", prazoLongo:$("cPrazoLongo").value.trim()||"7 dias úteis",
+  falta:$("cFalta").value.replace(/[^0-9A-Za-z]/g,"").toUpperCase(), validade:$("cValidade").value.trim(),
+  pix:$("cPix").value.trim()||"[chave Pix]" }; }
+
+/* itens do orçamento */
+let items = [{num:"245", tam:"15", cor:"inox"}];
+const esc = s => s.replace(/[&"<>]/g, c=>({"&":"&amp;",'"':"&quot;","<":"&lt;",">":"&gt;"}[c]));
+function seg(name, label, opts, val){
+  return `<div class="seg" role="group" aria-label="${label}">` + opts.map(([v,l])=>`<button type="button" data-k="${name}" data-v="${v}" aria-pressed="${v===val}">${l}</button>`).join("") + `</div>`;
+}
+function drawItems(){
+  $("items").innerHTML = items.map((it,i)=>`
+    <div class="item" data-i="${i}">
+      <input class="plate" type="text" inputmode="text" autocomplete="off" maxlength="12" value="${esc(it.num)}" aria-label="Número da casa ${i+1}" placeholder="245">
+      <div class="opts">${seg("tam","Tamanho",[["15","15cm"],["20","20cm"],["30","30cm"]],it.tam)}${seg("cor","Cor",[["inox","Inox"],["preto","Preto"]],it.cor)}</div>
+      ${items.length>1?`<button class="rm" type="button" aria-label="Remover número ${i+1}">✕</button>`:"<span></span>"}
+      <div class="item-info"></div>
+    </div>`).join("");
+}
+$("items").addEventListener("input", e=>{
+  if(!e.target.classList.contains("plate")) return;
+  items[+e.target.closest(".item").dataset.i].num = e.target.value; render();
+});
+$("items").addEventListener("click", e=>{
+  const row = e.target.closest(".item"); if(!row) return; const i=+row.dataset.i;
+  const b = e.target.closest(".seg button");
+  if(b){ items[i][b.dataset.k]=b.dataset.v; drawItems(); render(); return; }
+  if(e.target.closest(".rm")){ items.splice(i,1); drawItems(); render(); }
+});
+$("addItem").addEventListener("click", ()=>{
+  items.push({num:"", tam:"15", cor:"inox"}); drawItems(); render();
+  const p=document.querySelectorAll(".plate"); p[p.length-1].focus();
+});
+$("temLetr").addEventListener("change", ()=>{ $("letrBox").hidden = !$("temLetr").checked; render(); });
+
+function linha(it, c){
+  const n = digitos(it.num);
+  const sob = it.tam!=="15" || it.cor==="preto";
+  const unit = it.tam==="15" ? c.preco : it.tam==="20" ? c.p20 : c.p30;
+  const unitOld = it.tam==="15" ? c.cheio : unit;
+  const falta = sob ? [] : [...new Set(it.num.toUpperCase().split("").filter(ch=>/[0-9A-Z]/.test(ch) && c.falta.includes(ch)))];
+  return {...it, casa: it.num.trim()||"[número]", n, sob, unit, tot:n*unit, old:n*unitOld, falta};
+}
 function quote(){
-  const c = cfg(); const casa = $("casa").value.trim();
-  const n = (casa.match(/[0-9A-Za-z]/g)||[]).length;
-  const tam = (document.querySelector('input[name="tam"]:checked')||{}).value||"15";
-  const sob = tam!=="15";
-  const precoTam = {"15":c.preco,"20":120,"30":180}[tam];
-  const tot = n*precoTam, old = sob ? tot : n*c.cheio, eco = old-tot;
-  const emFalta = sob ? [] : [...new Set(casa.toUpperCase().split("").filter(ch=>/[0-9A-Z]/.test(ch) && c.falta.includes(ch)))];
-  const prazo = (sob || emFalta.length) ? c.prazoLongo : c.prazo15;
-  return {c,casa:casa||"[número]",n,tot,old,eco,emFalta,prazo,tam,sob};
+  const c = cfg();
+  let lines = items.map(it=>linha(it,c));
+  if(lines.length>1) lines = lines.filter(l=>l.n>0);
+  if(!lines.length) lines = [linha({num:"",tam:"15",cor:"inox"},c)];
+  const nums = lines.reduce((a,l)=>a+l.tot,0);
+  const old = lines.reduce((a,l)=>a+l.old,0);
+  const inst = $("inst").checked ? 100 : 0;
+  const temLetr = $("temLetr").checked;
+  const letr = temLetr ? (+$("letrVal").value||0) : 0;
+  const tot = nums + inst + letr;
+  const sob = lines.some(l=>l.sob) || temLetr;
+  const emFalta = [...new Set(lines.flatMap(l=>l.falta))];
+  return {c, lines, nums, old, eco: old-nums, inst, letr, temLetr, letrDesc:$("letrDesc").value.trim(), tot, sob, emFalta,
+    prazo: (sob || emFalta.length) ? c.prazoLongo : c.prazo15};
+}
+const desc = l => `${l.tam}cm ${l.cor}`;
+const temPromo = q => q.eco>0;
+function itensTxt(q){
+  if(q.lines.length===1 && !q.inst && !q.temLetr){
+    const l=q.lines[0];
+    return `Casa ${l.casa} · ${l.n} dígito${l.n===1?"":"s"} · ${desc(l)}`;
+  }
+  let s = q.lines.map(l=>`▫️ Casa ${l.casa} · ${desc(l)} · ${l.n} díg. = ${brl(l.tot)}`).join("\n");
+  if(q.inst) s += `\n🔧 Instalação = R$100`;
+  if(q.temLetr) s += `\n✨ Letreiro${q.letrDesc?` "${q.letrDesc}"`:""} = ${q.letr?brl(q.letr):"[valor]"}`;
+  return s;
 }
 
+/* mensagens */
 const T = {
-  abertura:["Abertura", q=>`Oi! Aqui é da Melhoraço 👋
-Números em inox, não enferrujam e duram anos.
-
-🔥 Promoção: de ${brl(q.c.cheio)} por ${brl(q.c.preco)} cada dígito (15cm)
-
-Me manda o número da sua casa que eu já te mostro como fica e o valor fechado 👇`],
   orcamento:["Orçamento", q=>{
-    const cab = `Casa ${q.casa} = ${q.n} dígito${q.n===1?"":"s"} · ${q.tam}cm\n\n`;
-    if(q.sob) return cab + `Total: ${brl(q.tot)} ✅
-💳 ou ${parc(q.tot)} no cartão
+    let s = `Seu orçamento Melhoraço ✅\n\n${itensTxt(q)}\n\n`;
+    s += temPromo(q) ? `De ${brl(q.old+q.inst+q.letr)} ➜ por *${brl(q.tot)}*\nVocê economiza ${brl(q.eco)} 🔥\n` : `Total: *${brl(q.tot)}*\n`;
+    s += `💳 ou ${parc(q.tot)} no cartão\n\n`;
+    s += `🚚 Entrega GRÁTIS em Fortaleza${q.sob?"":" pagando no pedido"}\n`;
+    s += q.sob ? `🛠️ Feito sob medida pra você: pronto em ${q.prazo}, pagamento no pedido\n` : `⏱️ Chega em ${q.prazo}\n`;
+    if(temPromo(q)) s += (q.c.validade ? `⏳ Promoção válida até ${q.c.validade}` : `⏳ Preço promocional por tempo limitado`) + `\n`;
+    return s + `\nPrefere Pix ou cartão?`; }],
 
-🛠️ Fabricado sob medida pra você: pagamento no pedido
-🚚 Entrega GRÁTIS em toda Fortaleza
-Fica pronto em ${q.prazo}.
+  abertura:["Abertura", q=>`Oi! Aqui é a Melhoraço 👋
+Números residenciais em inox: não enferrujam e não desbotam no sol de Fortaleza.
 
-Prefere Pix ou cartão?`;
-    return cab + `De ${brl(q.old)} ➜ por ${brl(q.tot)} ✅
-💳 ou ${parc(q.tot)} no cartão
-Você economiza ${brl(q.eco)}
+🔥 15cm de ${brl(q.c.cheio)} por ${brl(q.c.preco)} o dígito
+🚚 Entrega grátis em Fortaleza, em ${q.c.prazo15}
 
-🚚 Entrega GRÁTIS em toda Fortaleza pagando no pedido
-Entrega em ${q.prazo}.
-Promoção válida até ${q.c.validade}.
+Me manda o número da sua casa que eu já te passo o valor fechado 👇`],
 
-Prefere Pix ou cartão?`; }],
-  s1:["Depois de 30 min", q=>`Oi! É só me mandar o número da casa, tipo *245*, que eu te passo o valor na hora 😊`],
-  s2:["No dia seguinte · com foto", q=>`Bom dia! Olha como ficou numa fachada que entregamos essa semana 👆
+  s1:["30 min depois", q=>`Oi! É só me mandar o número da casa (ex.: *245*) que eu calculo na hora 😊`],
+  s2:["Dia seguinte · mande uma foto antes", q=>`Bom dia! Olha como ficou numa fachada que entregamos essa semana 👆
 
 Pronta entrega em ${q.c.prazo15} e frete grátis em Fortaleza.
 Qual o número da sua casa?`],
-  s3:["Depois de 3 dias · última", q=>`Vou encerrar seu atendimento por aqui pra não te incomodar.
+  s3:["3 dias depois · última", q=>`Vou encerrar seu atendimento por aqui pra não te incomodar 🙏
 
-Se ainda quiser, é só responder com o número da casa que eu garanto o preço de ${brl(q.c.preco)} por dígito pra você 🙌`],
+Se ainda quiser, é só responder com o número da casa que eu garanto o preço de ${brl(q.c.preco)} por dígito pra você.`],
+
   pix:["Fechamento · Pix", q=>`Fechado! 🙌
-Total: ${brl(q.tot)}
-Pix: ${q.c.pix}
+Total: *${brl(q.tot)}*
+Chave Pix (celular): ${q.c.pix}
 
-Me manda o comprovante + endereço que eu já separo o seu.`],
+Me manda:
+1️⃣ O comprovante
+2️⃣ Endereço completo com ponto de referência
+
+Assim que cair, já separo o seu 🚚`],
   cartao:["Fechamento · Cartão", q=>`Fechado! 🙌
-Total: ${brl(q.tot)} em até ${parc(q.tot)}
-Vou te mandar o link de pagamento no cartão agora.
+Total: *${brl(q.tot)}*, em até ${parc(q.tot)}.
+Vou te mandar o link de pagamento agora.
 
-Enquanto isso, me passa o endereço de entrega?`],
-  f1:["Depois de 1 hora", q=>`Conseguiu ver? Separei os seus no preço promocional 😉`],
-  f2:["No dia seguinte", q=>`Bom dia! A promoção de ${brl(q.c.preco)} vai até ${q.c.validade}. Depois volta pra ${brl(q.c.cheio)}. Quer que eu garanta o seu?`],
-  f3:["Depois de 3 dias · última", q=>`Última chamada 🔔 Ainda tenho estoque dos 15cm na promoção. Se quiser, é só mandar "QUERO" que eu fecho pra você.`],
-  pos1:["Agradecimento + avaliação", q=>`Obrigado pela confiança! 🙏
-Esperamos que tenha gostado dos seus números.
+Enquanto isso, me passa o endereço completo com ponto de referência?`],
 
-Seu feedback é muito importante pra Melhoraço. Pode deixar uma avaliação rápida no nosso perfil? Leva menos de 1 minuto ⭐
+  f1:["1 hora depois", q=>`Conseguiu ver o orçamento? Deixei os seus separados no preço promocional 😉`],
+  f2:["Dia seguinte", q=>`Bom dia! Ainda dá tempo de garantir o seu por ${brl(q.tot)}${temPromo(q)?` (economia de ${brl(q.eco)})`:""}.
+Dá pra parcelar em ${parc(q.tot)}.
+
+Fecho pra você?`],
+  f3:["3 dias depois · última", q=>`Última chamada 🔔
+Vou liberar os números que separei pra você. Se ainda quiser, é só mandar *QUERO* que eu fecho no mesmo valor.`],
+
+  pago:["Pagamento recebido", q=>`Pagamento recebido! ✅ Obrigado pela confiança.
+
+${q.sob?`Seu pedido entra na produção agora e fica pronto em ${q.prazo}.`:`Seu pedido sai pra entrega em até ${q.prazo}.`}
+Te aviso aqui assim que sair 🚚`],
+  saiu:["Saiu pra entrega", q=>`Seu pedido saiu pra entrega! 🚚
+Já já chega aí. Qualquer coisa, me chama por aqui.`],
+
+  pos1:["Agradecimento + avaliação", q=>`Chegou certinho? Esperamos que tenha gostado! 🙏
+
+Sua avaliação ajuda muito a Melhoraço. Leva menos de 1 minuto ⭐
 👉 https://g.page/r/Cb_TXLt5xwXaEBE/review
 
-E se puder, manda uma foto de como ficou na sua fachada 📸`],
-  pos2:["Lembrete · 2 dias depois", q=>`Oi! Passando só pra saber se ficou tudo certinho com os números 😊
+Se puder, manda uma foto de como ficou na fachada 📸`],
+  pos2:["Lembrete · 2 dias depois", q=>`Oi! Ficou tudo certo com os números? 😊
 
-Se puder deixar sua avaliação, ajuda muito a gente:
+Se puder deixar sua avaliação, ajuda demais a gente:
 ⭐ https://g.page/r/Cb_TXLt5xwXaEBE/review`],
+
+  confia:["\"É confiável?\" / medo de golpe", q=>`Pode ficar tranquilo 😊
+Temos endereço físico: Av. Vinte de Janeiro, 1657, Casa 48 – Fortaleza 📍
+
+Veja as avaliações de quem já comprou:
+⭐ https://g.page/r/Cb_TXLt5xwXaEBE
+
+Quer que eu já separe o seu?`],
   endereco:["\"Qual o endereço?\"", q=>`Estamos na Av. Vinte de Janeiro, 1657, Casa 48 – Fortaleza 📍
 https://g.page/r/Cb_TXLt5xwXaEBE
 
-Mas nem precisa vir: pagando no pedido, a entrega é GRÁTIS em toda Fortaleza e chega em ${q.c.prazo15} 🚚
+Mas nem precisa vir: pagando no pedido, a entrega é GRÁTIS em Fortaleza e chega em ${q.c.prazo15} 🚚
 
 Quer que eu já separe o seu?`],
-  instala:["\"Vocês instalam?\"", q=>`Instalamos sim! 🔧
-A instalação fica R$100 em Fortaleza.
+  tamanho:["\"Qual tamanho?\" / \"Tem maior?\"", q=>`Temos 3 tamanhos (preço por dígito):
+▫️ 15cm: ${brl(q.c.preco)} · pronta entrega em ${q.c.prazo15}
+▫️ 20cm: ${brl(q.c.p20)} · sob medida, ${q.c.prazoLongo}
+▫️ 30cm: ${brl(q.c.p30)} · sob medida, ${q.c.prazoLongo}
 
-Casa ${q.casa}:
-Números: ${brl(q.tot)}
+O 15cm é o mais pedido: dá pra ler da rua e fica elegante na fachada. Qual combina mais com a sua casa?`],
+  caro:["\"Tá caro\"", q=>`Entendo! Mas é inox de verdade: não enferruja nem desbota com o sol daqui. Você compra uma vez só.
+${temPromo(q)?`E está ${brl(q.c.cheio-q.c.preco)} mais barato por dígito na promoção.\n`:""}
+Dá pra parcelar em ${parc(q.tot)} no cartão. Fecho assim pra você?`],
+  depois:["\"Vou ver depois\"", q=>`Tranquilo! Só aviso que o preço promocional ${q.c.validade?`vai só até ${q.c.validade}`:"pode acabar a qualquer momento"}.
+Posso deixar o seu reservado?`],
+  na_entrega:["\"Posso pagar na entrega?\"", q=>q.sob ? `Nesse pedido o pagamento é antecipado, porque fabricamos sob medida pra você 🛠️
+
+Mas a entrega sai GRÁTIS em Fortaleza e dá pra parcelar em ${parc(q.tot)} no cartão.
+Prefere Pix ou cartão?` : `Pode sim! Só que aí o frete é cobrado à parte.
+Me manda o endereço que eu calculo 👇
+
+💡 Pagando agora no Pix ou cartão, a entrega sai GRÁTIS em Fortaleza.`],
+  instala:["\"Vocês instalam?\"", q=>`Instalamos sim! 🔧 R$100 em Fortaleza.
+
+Números: ${brl(q.nums)}
 Instalação: R$100
-Total: ${brl(q.tot+100)}
+Total: *${brl(q.nums+100)}* (ou ${parc(q.nums+100)})
 
-Quer com instalação ou só os números?`],
+Quer com instalação?`],
   instala_fora:["Instalação fora de Fortaleza", q=>`A instalação a gente faz só em Fortaleza. Mas os números são fáceis de colocar: qualquer pessoa de confiança consegue instalar 👍
 
 Quer seguir com o pedido?`],
+  preto:["\"Tem preto?\"", q=>`Temos sim! ⚫ Mesmo valor do inox.
+É feito sob encomenda, em ferro galvanizado com pintura, e fica pronto em ${q.c.prazoLongo} (pagamento no pedido).
+
+Só um detalhe: por ser pintado, não tem garantia contra ferrugem. O inox não enferruja e sai em ${q.c.prazo15}.
+
+Prefere o preto ou o inox?`],
+  enferruja:["\"Enferruja?\" / \"É inox mesmo?\"", q=>`É inox de verdade ✅ Não enferruja e não desbota com sol e chuva. Dura anos na fachada.
+
+Quer que eu calcule o da sua casa? Só me manda o número 👇`],
   letras:["\"Trabalha com letras?\"", q=>`Trabalhamos sim! ✅
-Fazemos letras e letreiros em inox sob medida: nome da casa, da empresa ou logo.
+Fazemos letras e letreiros sob medida: nome da casa, da empresa ou logo.
 
 Me manda:
 1️⃣ O que quer escrever
-2️⃣ Uma foto do local onde vai ficar
+2️⃣ Uma foto do local
 3️⃣ O tamanho aproximado, se souber
 
-Que eu já te passo o orçamento 👇`],
-  preto:["\"Tem preto?\"", q=>`Temos sim! ⚫
-O preto é feito sob encomenda, em ferro galvanizado com pintura. Fica o mesmo valor do inox.
-
-Só um detalhe: por ser pintado, não tem garantia contra ferrugem. O inox não enferruja.
-
-Quer seguir com o preto ou prefere o inox?`],
-  na_entrega:["\"Posso pagar na entrega?\"", q=>q.sob ? `No ${q.tam}cm o pagamento é no pedido, porque fabricamos sob medida pra você 🛠️
-
-Mas a entrega sai GRÁTIS em toda Fortaleza e dá pra parcelar em ${parc(q.tot)} no cartão.
-
-Prefere Pix ou cartão?` : `Pode sim! Só que aí o frete é cobrado à parte.
-Me manda seu endereço completo que eu calculo pra você 👇
-
-💡 Pagando agora no Pix ou cartão, a entrega sai GRÁTIS pra toda Fortaleza.`],
-  caro:["\"Tá caro\"", q=>`Entendo! Mas é inox de verdade, não enferruja nem desbota com o sol daqui. Você compra uma vez só. E ainda está ${brl(q.c.cheio-q.c.preco)} mais barato por dígito.
-
-Se ajudar, dá pra parcelar em ${parc(q.tot)} no cartão.`],
-  depois:["\"Vou ver depois\"", q=>`Tranquilo! Só aviso que o preço promocional vai só até ${q.c.validade}. Posso deixar reservado?`],
-  nao_sei:["\"Não sei o tamanho\"", q=>`Temos 3 tamanhos (preço por dígito):
-▫️ 15cm: ${brl(q.c.preco)} · pronta entrega em ${q.c.prazo15}
-▫️ 20cm: R$120 · sob medida, ${q.c.prazoLongo}
-▫️ 30cm: R$180 · sob medida, ${q.c.prazoLongo}
-
-O de 15cm é o mais pedido: dá pra ler da rua e fica elegante na fachada.
-
-Te mando uma foto de como fica instalado?`]
+Que eu te passo o orçamento 👇`]
 };
 
+/* copiar */
+function copyText(card, btn){
+  const pre = card.querySelector("pre"), txt = pre.textContent, label = btn.textContent;
+  const done = ()=>{ btn.textContent="Copiado ✓"; btn.classList.add("ok"); card.classList.add("sent"); setTimeout(()=>{btn.textContent=label;btn.classList.remove("ok")},1500); };
+  const fallback = ()=>{ const r=document.createRange(); r.selectNodeContents(pre); const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    try{ document.execCommand("copy"); done(); }catch(_){ btn.textContent="Selecionado"; } };
+  try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(_){ fallback(); }
+}
 document.querySelectorAll(".msg[data-tpl]").forEach(el=>{
-  const k = el.dataset.tpl;
-  el.innerHTML = `<div class="msg-label"><span>${T[k][0]}</span><button class="copy" type="button">Copiar</button></div><pre></pre>`;
-  el.querySelector("button").addEventListener("click", e=>{
-    const btn = e.currentTarget, pre = el.querySelector("pre"), txt = pre.textContent;
-    const done = ()=>{ btn.textContent="Copiado ✓"; btn.classList.add("ok"); setTimeout(()=>{btn.textContent="Copiar";btn.classList.remove("ok")},1500); };
-    const fallback = ()=>{ const r=document.createRange(); r.selectNodeContents(pre); const s=getSelection(); s.removeAllRanges(); s.addRange(r); try{ document.execCommand("copy"); done(); }catch(_){ btn.textContent="Selecionado"; } };
-    try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(_){ fallback(); }
+  el.innerHTML = `<div class="msg-label"><span>${T[el.dataset.tpl][0]}</span><button class="copy" type="button">Copiar</button></div><pre></pre>`;
+  el.querySelector("button").addEventListener("click", e=> copyText(el, e.currentTarget));
+});
+$("barCopy").addEventListener("click", e=> copyText(document.querySelector('[data-tpl="orcamento"]'), e.currentTarget));
+
+/* busca */
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+$("q").addEventListener("input", ()=>{
+  const t = norm($("q").value.trim()); let any = false;
+  document.querySelectorAll("main section").forEach(sec=>{
+    if(sec.id==="orcamento" || sec.id==="tabela"){ sec.hidden = !!t; return; }
+    let hit = 0;
+    sec.querySelectorAll(".msg").forEach(m=>{ const ok = !t || norm(m.textContent).includes(t); m.hidden = !ok; if(ok) hit++; });
+    sec.hidden = !hit; if(hit) any = true;
   });
+  $("ajustes").hidden = !!t;
+  $("noRes").hidden = !t || any;
 });
 
+/* render */
 function render(){
   const q = quote();
   document.querySelectorAll(".msg[data-tpl]").forEach(el=>{ el.querySelector("pre").textContent = T[el.dataset.tpl][1](q); });
-  $("fDig").textContent=q.n; $("fOld").textContent=brl(q.old); $("fNew").textContent=brl(q.tot);
-  const fr=$("fFrete");
-  if(!q.n){ fr.textContent="Digite o número da casa."; fr.className="frete"; }
-  else { fr.textContent= q.sob ? "🛠️ Sob medida: pagamento sempre no pedido · frete grátis" : "🚚 Frete grátis em Fortaleza se pagar no pedido"; fr.className="frete free"; }
-  $("fOld").parentElement.style.visibility = q.sob ? "hidden" : "";
-  const fp=$("fPrazo");
-  if(!q.n){ fp.textContent=""; }
-  else if(q.sob){ fp.textContent=`⏱️ Fica pronto em ${q.c.prazoLongo}`; fp.className="frete miss"; }
-  else if(q.emFalta.length){ fp.textContent=`⚠️ Número ${q.emFalta.join(", ")} em falta: prazo de ${q.c.prazoLongo}`; fp.className="frete miss"; }
-  else { fp.textContent=`⏱️ Pronta entrega: ${q.c.prazo15}`; fp.className="frete free"; }
-  $("hdrOld").textContent=brl(q.c.cheio); $("hdrNew").textContent=brl(q.c.preco);
-  let rows=""; for(let i=1;i<=12;i++){ const t=i*q.c.preco,o=i*q.c.cheio; rows+=`<tr><td>${i}</td><td>${brl(o)}</td><td class="p">${brl(t)}</td><td>${brl(o-t)}</td><td>${brl(i*120)}</td><td>${brl(i*180)}</td></tr>`; }
+  document.querySelectorAll(".item").forEach((row,i)=>{
+    const l = linha(items[i], q.c);
+    row.querySelector(".item-info").innerHTML = l.n
+      ? `${l.n} dígito${l.n===1?"":"s"} × ${brl(l.unit)} = <strong>${brl(l.tot)}</strong>` + (l.falta.length?` · <span class="tag">${l.falta.join(", ")} em falta</span>`:"") + (l.cor==="preto"?` · <span class="tag">preto sem garantia contra ferrugem</span>`:"")
+      : "Digite o número da casa";
+  });
+  $("sOld").textContent = brl(q.old+q.inst+q.letr); $("sOldBox").style.visibility = temPromo(q) ? "" : "hidden";
+  $("sTot").textContent = brl(q.tot); $("sParc").textContent = parcV(q.tot);
+  const f = [];
+  if(q.sob) f.push(["w",`🛠️ Sob medida: pagamento no pedido · ${q.prazo}`]);
+  else if(q.emFalta.length) f.push(["w",`⚠️ ${q.emFalta.join(", ")} em falta: prazo de ${q.prazo}`]);
+  else f.push(["",`⏱️ Pronta entrega: ${q.prazo}`]);
+  f.push(["", q.sob ? "🚚 Frete grátis" : "🚚 Frete grátis pagando no pedido"]);
+  if(temPromo(q)) f.push(["",`🔥 Economia de ${brl(q.eco)}`]);
+  $("flags").innerHTML = f.map(([c,t])=>`<span class="flag ${c}">${t}</span>`).join("");
+  $("barTot").textContent = brl(q.tot);
+  $("barInfo").textContent = q.lines.map(l=>`${l.casa} · ${desc(l)}`).join(" + ") + (q.inst?" + instalação":"") + (q.temLetr?" + letreiro":"");
+  $("hdrOld").textContent = brl(q.c.cheio); $("hdrNew").textContent = brl(q.c.preco);
+  let rows=""; for(let i=1;i<=12;i++){ rows+=`<tr><td>${i}</td><td>${brl(i*q.c.cheio)}</td><td class="p">${brl(i*q.c.preco)}</td><td>${brl(i*q.c.p20)}</td><td>${brl(i*q.c.p30)}</td></tr>`; }
   $("tb").innerHTML=rows;
-  try{ const s={}; fields.forEach(f=>s[f]=$(f).value); localStorage.setItem("melhoraco-cfg",JSON.stringify(s)); }catch(e){}
+  try{ const s={}; fields.forEach(k=>s[k]=$(k).value); localStorage.setItem("melhoraco-cfg2",JSON.stringify(s)); }catch(e){}
 }
-["casa",...fields].forEach(id=>$(id).addEventListener("input",render));
-document.querySelectorAll('input[name="tam"]').forEach(el=>el.addEventListener("change",render));
-render();
+[...fields,"letrDesc","letrVal"].forEach(id=>$(id).addEventListener("input",render));
+$("inst").addEventListener("change",render);
+drawItems(); render();
 </script>
 
 </body>
