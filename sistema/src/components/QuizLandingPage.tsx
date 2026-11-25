@@ -30,7 +30,7 @@ import { Helmet } from "react-helmet-async";
 import { useUTM } from "@/hooks/useUTM";
 import { reportError } from "@/lib/reportError";
 import { newEventId, trackMetaEvent } from "@/lib/metaPixel";
-import { openTrackedWhatsApp, trackWhatsAppClick, type PageTrackingContext } from "@/lib/publicTracking";
+import { openTrackedWhatsApp, type PageTrackingContext } from "@/lib/publicTracking";
 import { appUrl } from "@/lib/appUrl";
 
 interface QuizLandingPageProps {
@@ -134,7 +134,6 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     submitting.current = true;
     setSubmitError("");
     setLoading(true);
-    const popup = window.open("about:blank", "_blank");
     const total_value = formData.quantity * (data.price || 59);
     
     try {
@@ -193,36 +192,14 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
         }
       }
 
-      // WhatsApp Message
-      const message = `Olá! Vim pelo site da Melhoraço.
-
-Meu pedido:
-• Quantidade: ${formData.quantity} números
-• Valor total: ${formatCurrency(total_value)}
-• Número desejado: ${formData.desired_number}
-
-Dados:
-• Nome: ${formData.first_name} ${formData.last_name}
-• WhatsApp: ${formData.whatsapp}
-
-Endereço:
-• CEP: ${formData.cep}
-• Rua: ${formData.street}
-• Número: ${formData.number}
-• Bairro: ${formData.neighborhood}
-• Cidade: ${formData.city}
-${link ? `\nMeu orçamento: ${link}\n` : ""}
-Quero confirmar meu pedido.`;
-
-      const phone = data.whatsapp_number?.replace(/\D/g, "") || "5585999999999";
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      trackWhatsAppClick(url, data.trackingContext);
-      if (popup) { popup.opener = null; popup.location.href = url; }
-      else toast.info("Pedido salvo. Toque em Chamar no WhatsApp para continuar.");
-      
+      // Com o orçamento criado, o cliente vai direto para ele (sem abrir o
+      // WhatsApp). Sem orçamento, a tela final oferece o WhatsApp como opção.
+      if (link) {
+        window.location.assign(link);
+        return;
+      }
       nextStep();
     } catch (e: any) {
-      popup?.close();
       reportError(e, { scope: "quiz-submit", silent: true, extra: { eventId: leadEventId.current, pagePath: window.location.pathname } });
       setSubmitError("Não conseguimos enviar seu pedido. Seus dados foram mantidos; tente novamente.");
       toast.error("Não conseguimos enviar seu pedido. Tente novamente.");

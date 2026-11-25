@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { HelmetProvider } from "react-helmet-async";
 import { QuizLandingPage } from "./QuizLandingPage";
@@ -36,20 +36,28 @@ it("falha de insert mantém dados e não emite Lead ou Contact", async () => {
   expect(report).toHaveBeenCalled(); expect(pixel).not.toHaveBeenCalled(); expect(contact).not.toHaveBeenCalled();
   expect(screen.getByPlaceholderText("Nome da rua")).toHaveValue("Rua Teste");
 });
-it("cria o orçamento no sistema e mostra o link para o cliente", async () => {
+it("cria o orçamento e leva o cliente direto para ele, sem abrir o WhatsApp", async () => {
   catalog.product = { id: "prod-15", price: 59 };
   insert.mockResolvedValue({ error: null });
   rpc.mockResolvedValue({ data: { ok: true, quote_id: "q1", token: "tok" }, error: null });
-  fillQuiz();
-  fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
-  const link = await screen.findByRole("link", { name: /VER MEU ORÇAMENTO/ });
-  expect(link).toHaveAttribute("href", "https://site.test/sistema/p/q_q1_tok");
+  const assign = vi.fn();
+  const original = window.location;
+  Object.defineProperty(window, "location", { configurable: true, value: { ...original, assign, pathname: "/sistema/p/quiz" } });
+  try {
+    fillQuiz();
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith("https://site.test/sistema/p/q_q1_tok"));
+  } finally {
+    Object.defineProperty(window, "location", { configurable: true, value: original });
+  }
   expect(rpc).toHaveBeenCalledWith("create_public_order", { payload: expect.objectContaining({
     source: "lp",
     customer: expect.objectContaining({ name: "Teste", phone: "85999999999" }),
     items: [{ product_id: "prod-15", quantity: 1 }],
   }) });
   expect(insert.mock.invocationCallOrder[0]).toBeLessThan(rpc.mock.invocationCallOrder[0]);
+  expect(window.open).not.toHaveBeenCalled();
+  expect(contact).not.toHaveBeenCalled();
 });
 it("falha ao criar o orçamento não perde o lead nem trava o cliente", async () => {
   catalog.product = { id: "prod-15", price: 59 };
@@ -59,6 +67,7 @@ it("falha ao criar o orçamento não perde o lead nem trava o cliente", async ()
   fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
   await screen.findByText("Seu orçamento está pronto 🎉");
   expect(screen.queryByRole("link", { name: /VER MEU ORÇAMENTO/ })).toBeNull();
+  expect(window.open).not.toHaveBeenCalled();
   expect(pixel).toHaveBeenCalledWith("Lead", expect.anything(), "lead-event");
   expect(report).toHaveBeenCalled();
 });
