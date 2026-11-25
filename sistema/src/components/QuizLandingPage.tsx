@@ -4,9 +4,7 @@ import { fetchLandingProduct, useLandingCatalog, useLandingSizes } from "@/hooks
 import { countPieces, sizeLabel, sizeLeadTime } from "@/lib/catalog";
 import { useState, useRef } from "react";
 import { 
-  Clock, 
-  CheckCircle2, 
-  MapPin, 
+  Clock,   
   Truck, 
   MessageSquare, 
   ArrowRight, 
@@ -15,7 +13,6 @@ import {
   ChevronRight,
   User,
   Hash,
-  Home,
   CreditCard,
   Check
 } from "lucide-react";
@@ -89,27 +86,6 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
-
-  const handleCEP = async (cep: string) => {
-    const cleanCEP = cep.replace(/\D/g, "");
-    setFormData(prev => ({ ...prev, cep: cleanCEP }));
-    if (cleanCEP.length === 8) {
-      try {
-        const response = await fetch(`https://viacep.com.br/ws/${cleanCEP}/json/`);
-        const data = await response.json();
-        if (!data.erro) {
-          setFormData(prev => ({
-            ...prev,
-            street: data.logradouro,
-            neighborhood: data.bairro,
-            city: data.localidade,
-          }));
-        }
-      } catch (e) {
-        console.error("CEP fetch error", e);
-      }
-    }
-  };
 
   const formatWhatsApp = (value: string) => {
     const v = value.replace(/\D/g, "");
@@ -206,7 +182,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
   };
 
   const totalValue = quantity * unitPrice;
-  const progress = ((step - 1) / 3) * 100;
+  const progress = ((step - 1) / 2) * 100;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-green-100 selection:text-green-900 flex flex-col">
@@ -231,10 +207,10 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
           <img src={logo} alt="Melhoraço" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
           <span className="font-black text-lg tracking-tighter uppercase">Melhoraço</span>
         </div>
-        {step > 1 && step < 5 && (
+        {step > 1 && step < 4 && (
           <div className="flex items-center gap-4">
             <Progress value={progress} className="w-32 h-2" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Etapa {step - 1}/3</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Etapa {step - 1}/2</span>
           </div>
         )}
       </header>
@@ -427,111 +403,22 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
 
             </div>
 
+            {submitError && <p role="alert" className="text-destructive text-sm">{submitError}</p>}
             <div className="flex gap-4">
               <Button variant="outline" onClick={prevStep} className="h-16 px-6 rounded-2xl font-bold border-2">VOLTAR</Button>
-              <Button 
-                onClick={nextStep}
-                disabled={!formData.first_name.trim() || formData.whatsapp.replace(/\D/g, "").length < 10}
-                className="flex-1 h-16 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-lg gap-3"
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || !formData.first_name.trim() || formData.whatsapp.replace(/\D/g, "").length < 10}
+                className="flex-1 h-16 rounded-2xl bg-green-600 hover:bg-green-500 text-white font-black text-lg gap-3 shadow-xl shadow-green-500/20"
               >
-                CONTINUAR <ChevronRight className="w-5 h-5" />
+                {loading ? <Loader2 className="animate-spin" /> : <>VER MEU ORÇAMENTO <ChevronRight className="w-5 h-5" /></>}
               </Button>
             </div>
+            <p className="text-center text-xs font-medium text-slate-400">O endereço de entrega você informa na próxima tela.</p>
           </section>
         )}
 
         {step === 4 && (
-          <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="space-y-2 text-center">
-              <h2 className="text-3xl font-black tracking-tighter">Onde será a entrega?</h2>
-              <p className="text-slate-500 font-medium">Frete grátis em Fortaleza. Entrega rápida via Uber Flash.</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">CEP</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                  <Input 
-                    placeholder="00000-000" 
-                    className="pl-10 h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.cep}
-                    onChange={e => handleCEP(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                <div className="col-span-3 space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rua</label>
-                  <Input 
-                    placeholder="Nome da rua" 
-                    className="h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.street}
-                    onChange={e => setFormData(p => ({ ...p, street: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nº</label>
-                  <Input 
-                    placeholder="123" 
-                    className="h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.number}
-                    onChange={e => setFormData(p => ({ ...p, number: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bairro</label>
-                  <Input 
-                    placeholder="Ex: Aldeota" 
-                    className="h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.neighborhood}
-                    onChange={e => setFormData(p => ({ ...p, neighborhood: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cidade</label>
-                  <div className="relative">
-                    <Home className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                    <Input 
-                      placeholder="Fortaleza" 
-                      className="pl-10 h-14 rounded-xl font-bold border-slate-200"
-                      value={formData.city}
-                      onChange={e => setFormData(p => ({ ...p, city: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Complemento (Opcional)</label>
-                <Input 
-                  placeholder="Apt, bloco, ponto de referência" 
-                  className="h-14 rounded-xl font-bold border-slate-200"
-                  value={formData.complement}
-                  onChange={e => setFormData(p => ({ ...p, complement: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {submitError && <p role="alert" className="text-destructive text-sm">{submitError}</p>}
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={prevStep} className="h-16 px-6 rounded-2xl font-bold border-2">VOLTAR</Button>
-              <Button 
-                onClick={handleSubmit}
-                disabled={loading || !formData.street || !formData.number}
-                className="flex-1 h-16 rounded-2xl bg-green-600 hover:bg-green-500 text-white font-black text-lg gap-3 shadow-xl shadow-green-500/20"
-              >
-                {loading ? <Loader2 className="animate-spin" /> : "FINALIZAR PEDIDO 🎉"}
-              </Button>
-            </div>
-          </section>
-        )}
-
-        {step === 5 && (
           <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-xl mx-auto w-full space-y-10 animate-in zoom-in-95 duration-700">
             <div className="text-center space-y-4">
               <div className="w-24 h-24 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto shadow-2xl animate-bounce">
@@ -617,7 +504,7 @@ Quero confirmar meu pedido.`;
       )}
 
       {/* Floating WhatsApp Button */}
-      {step < 5 && (
+      {step < 4 && (
         <button 
           onClick={async () => {
             const phone = data.whatsapp_number?.replace(/\D/g, "") || "5585999999999";
