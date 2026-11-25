@@ -1,7 +1,7 @@
 import { CatalogPrice } from "@/components/catalog/CatalogPrice";
 import { ProductImage } from "@/components/catalog/ProductImage";
-import { fetchLandingProduct, useLandingCatalog } from "@/hooks/useLandingCatalog";
-import { countPieces } from "@/lib/catalog";
+import { fetchLandingProduct, useLandingCatalog, useLandingSizes } from "@/hooks/useLandingCatalog";
+import { countPieces, sizeLabel, sizeLeadTime } from "@/lib/catalog";
 import { useState, useRef } from "react";
 import { 
   Clock, 
@@ -53,6 +53,10 @@ interface QuizLandingPageProps {
 
 export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
   const product = useLandingCatalog(pageData.title || pageData.headline);
+  // Tamanho escolhido no quiz; começa no produto da LP (15 cm).
+  const sizes = useLandingSizes();
+  const [sizeId, setSizeId] = useState<string | null>(null);
+  const selectedSize = sizes.find(s => s.id === sizeId) ?? product ?? sizes[0];
   const data = { ...pageData, price: product?.price ?? pageData.price, original_price: product ? product.compare_at_price : pageData.original_price, hero_image_url: product?.image_url || pageData.hero_image_url };
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -81,6 +85,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
   // A quantidade sai do próprio número da casa: "1208" são 4 peças,
   // "125 / 340" são 6. Evita a etapa de quantidade e o erro de contagem.
   const quantity = countPieces(formData.desired_number);
+  const unitPrice = selectedSize?.price ?? (data.price || 59);
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
@@ -122,7 +127,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     submitting.current = true;
     setSubmitError("");
     setLoading(true);
-    const total_value = quantity * (data.price || 59);
+    const total_value = quantity * unitPrice;
     
     try {
       const { error } = await supabase.from("quiz_leads").insert({
@@ -152,7 +157,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
       let link: string | null = quoteUrl;
       // Se o catálogo ainda não carregou (internet lenta), busca o produto agora
       // em vez de deixar o cliente sem orçamento.
-      const orderProduct = product ?? await fetchLandingProduct(pageData.title || pageData.headline).catch(() => undefined);
+      const orderProduct = selectedSize ?? await fetchLandingProduct(pageData.title || pageData.headline).catch(() => undefined);
       if (!link && orderProduct?.id) {
         try {
           const fullName = `${formData.first_name} ${formData.last_name}`.trim();
@@ -167,7 +172,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 address,
                 address_number: formData.number,
                 address_complement: formData.complement,
-                notes: `Número(s) desejado(s): ${formData.desired_number}\nOrigem: LP ${window.location.pathname}`,
+                notes: `Número(s) desejado(s): ${formData.desired_number}\nTamanho: ${sizeLabel(orderProduct.name)}\nOrigem: LP ${window.location.pathname}`,
               },
               attribution: utm,
               items: [{ product_id: orderProduct.id, quantity }],
@@ -200,7 +205,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     }
   };
 
-  const totalValue = quantity * (data.price || 59);
+  const totalValue = quantity * unitPrice;
   const progress = ((step - 1) / 3) * 100;
 
   return (
@@ -293,10 +298,39 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
           <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="space-y-2 text-center">
               <h2 className="text-3xl font-black tracking-tighter">Qual é o número da sua casa?</h2>
-              <p className="text-slate-500 font-medium">{formatCurrency(data.price || 59)} por dígito</p>
+              <p className="text-slate-500 font-medium">Escolha o tamanho e digite o número</p>
             </div>
 
             <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 space-y-8">
+              {sizes.length > 1 && (
+                <div className="space-y-2">
+                  <p id="quiz-size-label" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tamanho (altura de cada dígito)</p>
+                  <div role="radiogroup" aria-labelledby="quiz-size-label" className="grid grid-cols-3 gap-2">
+                    {sizes.map(s => {
+                      const active = s.id === selectedSize?.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={active}
+                          onClick={() => setSizeId(s.id)}
+                          className={cn(
+                            "rounded-xl border-2 px-2 py-3 text-center transition-colors",
+                            active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-400",
+                          )}
+                        >
+                          <span className="block font-black text-lg leading-none">{sizeLabel(s.name)}</span>
+                          <span className="block text-xs font-bold mt-1">{formatCurrency(s.price)}</span>
+                          <span className={cn("block text-[10px] font-medium mt-1 leading-tight", active ? "text-white/70" : "text-slate-400")}>{sizeLabel(s.name) === "15 cm" ? "24h" : "7 dias úteis"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] font-medium text-slate-400">Preço por dígito.</p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label htmlFor="quiz-number" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Número(s) da fachada</label>
                 <div className="relative">
@@ -321,7 +355,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                       <span key={i} className="w-10 h-14 rounded-lg bg-gradient-to-b from-slate-100 to-slate-400 text-slate-900 font-black text-3xl flex items-center justify-center shadow-inner">{ch}</span>
                     ))}
                   </div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60">{quantity} {quantity === 1 ? "dígito" : "dígitos"} × {formatCurrency(data.price || 59)}</p>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60">{quantity} {quantity === 1 ? "dígito" : "dígitos"} de {sizeLabel(selectedSize?.name)} × {formatCurrency(unitPrice)}</p>
                   <p className="text-5xl font-black tracking-tighter">{formatCurrency(totalValue)}</p>
                 </div>
               )}
@@ -330,7 +364,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 {[
                   { icon: Truck, text: "Entrega grátis em Fortaleza pagando no pedido" },
                   { icon: CreditCard, text: "Até 3x sem juros no cartão" },
-                  { icon: Clock, text: "15 cm pronto em 24h" }
+                  { icon: Clock, text: `${sizeLabel(selectedSize?.name)}: ${sizeLeadTime(selectedSize?.name).toLowerCase()}` }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 font-bold text-slate-500 text-sm">
                     <item.icon className="w-5 h-5 text-green-500" />
