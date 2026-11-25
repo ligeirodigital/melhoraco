@@ -180,12 +180,15 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
   };
 
   const { data: settings } = useQuery({
-    queryKey: ["public-business-settings"],
+    queryKey: ["public-pix-settings"],
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data } = await supabase.from("business_settings").select("*").maybeSingle();
-      return data ?? null;
+      // Visitante não lê business_settings (RLS); a chave vem de uma função
+      // pública que expõe só chave e nome do recebedor.
+      const { data } = await supabase.rpc("get_public_pix_settings" as any);
+      const row = (data ?? null) as { pix_key?: string | null; pix_name?: string | null } | null;
+      return row?.pix_key ? { nubank_pix_key: row.pix_key, nubank_pix_name: row.pix_name ?? null } : null;
     },
   });
 
@@ -611,7 +614,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
             </div>
           )}
 
-          {isPaying && quote.status !== "aprovado" && (
+          {isPaying && quote.status !== "aprovado" && settings?.nubank_pix_key && (
             <div className="bg-white p-6 md:p-8 rounded-3xl border-2 border-green-500/20 shadow-xl animate-in zoom-in-95 space-y-6">
               <div className="text-center space-y-1">
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm text-green-600">Pagamento via PIX</h3>
@@ -621,7 +624,7 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
               <div className="flex flex-col items-center gap-6 py-4">
                 <div className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center border-2 border-dashed border-green-100 shadow-inner overflow-hidden">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(generatePixPayload(settings?.nubank_pix_key || "thiago@melhoraco.com.br", total, settings?.nubank_pix_name || "JOSE THIAGO OLIVEIRA", "FORTALEZA", quote.order_token || quote.id.slice(0, 6)))}`} 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6)))}`} 
                     alt="QR Code PIX" 
                     className="w-48 h-48"
                   />
@@ -632,14 +635,14 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                     <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Código PIX Copia e Cola</p>
                     <div className="flex items-center gap-2 w-full">
                       <div className="flex-1 truncate font-mono text-[10px] text-slate-500 bg-white p-2 rounded border">
-                        {generatePixPayload(settings?.nubank_pix_key || "thiago@melhoraco.com.br", total, settings?.nubank_pix_name || "JOSE THIAGO OLIVEIRA", "FORTALEZA", quote.order_token || quote.id.slice(0, 6))}
+                        {generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6))}
                       </div>
                       <Button 
                         size="icon" aria-label="Copiar código PIX" 
                         variant="secondary" 
                         className="shrink-0 h-10 w-10 rounded-lg"
                         onClick={() => {
-                          const payload = generatePixPayload(settings?.nubank_pix_key || "thiago@melhoraco.com.br", total, settings?.nubank_pix_name || "JOSE THIAGO OLIVEIRA", "FORTALEZA", quote.order_token || quote.id.slice(0, 6));
+                          const payload = generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6));
                           navigator.clipboard.writeText(payload);
                           toast.success("Código PIX copiado!");
                         }}
@@ -652,13 +655,13 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                   <div className="bg-green-50/50 p-4 rounded-xl flex flex-col items-center gap-2 border border-green-100">
                     <p className="text-[10px] font-black uppercase text-green-600 tracking-widest">Chave PIX</p>
                     <div className="font-bold text-slate-900 flex items-center gap-2">
-                       {settings?.nubank_pix_key || "thiago@melhoraco.com.br"}
+                       {settings?.nubank_pix_key ?? ""}
                        <Button 
                         size="icon" aria-label="Copiar chave PIX" 
                         variant="ghost" 
                         className="h-6 w-6 text-slate-400 hover:text-primary"
                         onClick={() => {
-                          navigator.clipboard.writeText(settings?.nubank_pix_key || "thiago@melhoraco.com.br");
+                          navigator.clipboard.writeText(settings?.nubank_pix_key ?? "");
                           toast.success("Chave PIX copiada!");
                         }}
                       >
@@ -706,7 +709,10 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                   {/* Secondary row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Button
-                      onClick={() => setIsPaying(true)}
+                      onClick={() => {
+                        if (!settings?.nubank_pix_key) return toast.error("Pix indisponível no momento. Use o cartão ou fale com a gente.");
+                        setIsPaying(true);
+                      }}
                       variant="outline"
                       className="h-12 rounded-lg font-bold gap-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 text-slate-700 uppercase tracking-wide text-xs"
                     >
