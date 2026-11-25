@@ -1,7 +1,9 @@
 // Envia notificações no celular (Web Push) da Melhoraço.
 // Chamada só pelo banco (função melhoraco.notify_push), autenticada pelo header x-push-secret.
 // Tipos: sale (venda paga -> investidores), withdrawal_request (pedido de saque -> administradores),
-// withdrawal_decided (pedido pago/recusado -> investidor que pediu).
+// withdrawal_decided (pedido pago/recusado -> investidor que pediu),
+// unpaid_quote (orçamento do site sem pagamento há 2h -> administradores e equipe, com o
+// WhatsApp do cliente já com a mensagem e o link do orçamento).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
@@ -64,6 +66,37 @@ Deno.serve(async (req) => {
         tag: `wd-${r.id}`,
       };
     }
+  } else if (kind === "unpaid_quote" && body.quote_id) {
+    const { data: q } = await db
+      .from("quotes")
+      .select("id, client_view_token, payment_status, status, delivery_fee, installation_fee, discount_amount, discount_type, clients:client_id(name, phone), quote_items(quantity, unit_price, product_name)")
+      .eq("id", body.quote_id)
+      .maybeSingle();
+    if (!q) return json({ ok: false, reason: "quote_not_found" });
+    if (q.payment_status === "paid" || q.status !== "pendente") return json({ ok: true, sent: 0, reason: "already_closed" });
+    const client = (q as { clients?: { name?: string; phone?: string } }).clients ?? {};
+    const items = (q.quote_items ?? []) as Array<{ quantity: number; unit_price: number; product_name?: string }>;
+    const base = items.reduce((t, i) => t + Number(i.unit_price || 0) * Number(i.quantity || 0), 0)
+      + Number(q.delivery_fee || 0) + Number(q.installation_fee || 0);
+    const disc = q.discount_type === "percent" ? base * Math.min(100, Number(q.discount_amount || 0)) / 100 : Number(q.discount_amount || 0);
+    const total = Math.max(0, base - disc);
+    const first = (client.name ?? "").trim().split(/\s+/)[0] || "tudo bem";
+    const pieces = items.reduce((t, i) => t + Number(i.quantity || 0), 0);
+    const size = items[0]?.product_name?.match(/(\d+)\s*cm/i)?.[1];
+    const link = `https://melhoraco.vercel.app/sistema/p/q_${q.id}_${q.client_view_token}`;
+    const text = `Oi, ${first}! Aqui é da Melhoraço 😊 Vi que você montou o orçamento dos seus números em inox` +
+      `${pieces ? ` (${pieces} ${pieces === 1 ? "dígito" : "dígitos"}${size ? ` de ${size} cm` : ""}, ${brl(total)})` : ""}. ` +
+      `Ficou alguma dúvida? Se quiser, já dá para finalizar por aqui, com Pix ou cartão em até 3x: ${link}`;
+    let phone = String(client.phone ?? "").replace(/\D/g, "");
+    if (phone.length === 10 || phone.length === 11) phone = `55${phone}`;
+    const { data: team } = await db.from("user_roles").select("user_id").in("role", ["admin", "staff"]);
+    userIds = [...new Set((team ?? []).map((a: { user_id: string }) => a.user_id))];
+    message = {
+      title: `Orçamento sem pagamento: ${client.name?.trim() || "cliente"} · ${brl(total)}`,
+      body: "Fez o orçamento pelo site há 2h e ainda não pagou. Toque para chamar no WhatsApp com a mensagem pronta.",
+      url: phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `/sistema/quotes/${q.id}`,
+      tag: `unpaid-${q.id}`,
+    };
   } else {
     return json({ ok: false, reason: "invalid_kind" }, 400);
   }

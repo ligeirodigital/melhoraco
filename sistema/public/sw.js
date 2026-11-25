@@ -24,6 +24,11 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = (event.notification.data && event.notification.data.url) || "/sistema/";
+  // Link externo (ex.: WhatsApp do cliente) abre fora do sistema, sem trocar a tela aberta.
+  if (/^https?:\/\//.test(url) && !url.startsWith(self.location.origin)) {
+    event.waitUntil(self.clients.openWindow(url));
+    return;
+  }
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
       for (const client of list) {

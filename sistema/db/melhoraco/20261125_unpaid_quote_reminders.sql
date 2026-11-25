@@ -1,0 +1,6 @@
+-- Aplicado no banco em 25/11/2026 (migração melhoraco_unpaid_quote_reminders).
+-- quotes.unpaid_reminder_sent_at; função melhoraco.send_unpaid_quote_reminders() (orçamentos
+-- 'lp'/'store' pendentes, sem pagamento, criados entre 2h e 24h atrás, uma vez por orçamento,
+-- só entre 8h e 21h de Fortaleza) que chama notify_push('unpaid_quote'); cron
+-- 'melhoraco-lembrete-sem-pagamento' a cada 15 minutos. Função melhoraco-push v2 com o tipo
+-- unpaid_quote (avisa admin + equipe com o link do WhatsApp do cliente já com a mensagem).

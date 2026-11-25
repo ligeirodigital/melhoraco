@@ -35,6 +35,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { confirmAction } from "@/lib/confirmAction";
+import { PushCard } from "@/pages/InvestorPanelPage";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -260,7 +261,7 @@ export default function QuotesList() {
           </p>
         )}
 
-        {statusFilter === "follow_up" ? <FollowUpQueue quotes={filtered} stages={pipelineStages.data || []} loading={quotes.isLoading} /> : <div className="grid gap-6">
+        {statusFilter === "follow_up" ? <div className="space-y-4"><PushCard title="Aviso de orçamento sem pagamento" description="Receba no celular quem fez orçamento pelo site e não pagou em 2h, com o WhatsApp já pronto para chamar." /><FollowUpQueue quotes={filtered} stages={pipelineStages.data || []} loading={quotes.isLoading} /></div> : <div className="grid gap-6">
           {quotes.isLoading ? (
             <QuotesSkeleton />
           ) : (
