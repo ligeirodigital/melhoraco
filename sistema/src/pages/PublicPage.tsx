@@ -13,6 +13,8 @@ import { ExternalLink, Instagram, Facebook, Phone, Mail, ShoppingCart, ShieldChe
 import { toast } from "sonner";
 import { reportError } from "@/lib/reportError";
 import { openTrackedWhatsApp, setTrackingPageContext } from "@/lib/publicTracking";
+import { trackMetaEvent } from "@/lib/metaPixel";
+import { PublicCheckoutCard } from "@/components/PublicCheckoutCard";
 import { useMounted } from "@/hooks/useMounted";
 import { formatCurrency } from "@/lib/formatQuote";
 import { cn } from "@/lib/utils";
@@ -21,7 +23,6 @@ import { LazyPdfButton } from "@/components/LazyPdfButton";
 import { saveFeedback, approveQuoteWithAssets, type FullQuote } from "@/lib/cloudStore";
 import { ProductLandingPage } from "@/components/ProductLandingPage";
 import { QuizLandingPage } from "@/components/QuizLandingPage";
-import { generatePixPayload } from "@/lib/pix";
 import { getQuoteTotal } from "@/lib/formatQuote";
 import { QuoteChatDrawer } from "@/components/QuoteChatDrawer";
 import { UpsellSection } from "@/components/UpsellSection";
@@ -143,7 +144,6 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
     })) as unknown as FullQuote["items"]
   } as unknown as FullQuote);
   const [isSigning, setIsSigning] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [typedName, setTypedName] = useState("");
   
@@ -179,21 +179,6 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
     }
   };
 
-  const { data: settings } = useQuery({
-    queryKey: ["public-pix-settings"],
-    staleTime: 10 * 60_000,
-    gcTime: 30 * 60_000,
-    queryFn: async () => {
-      // Visitante não lê business_settings (RLS); a chave vem de uma função
-      // pública que expõe só chave e nome do recebedor.
-      const { data } = await supabase.rpc("get_public_pix_settings" as any);
-      const row = (data ?? null) as { pix_key?: string | null; pix_name?: string | null } | null;
-      return row?.pix_key ? { nubank_pix_key: row.pix_key, nubank_pix_name: row.pix_name ?? null } : null;
-    },
-  });
-
-
-  
   const handleFeedback = async () => {
     if (rating === 0) return toast.error("Por favor, selecione uma nota.");
     if (!quote?.client_view_token) return toast.error("Sessão inválida.");
@@ -256,7 +241,6 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
 
       setQuote(updatedQuote as unknown as PublicQuote);
       setIsSigning(false);
-      setIsPaying(false);
 
       if (referralApplied?.code) {
         try {
@@ -315,9 +299,17 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
   // evitando divergência com getQuoteTotal.
   const discountValue = Math.max(0, subtotal + deliveryFee + installationFee - Number(total || 0));
 
+  const reloadQuote = async () => {
+    const { data } = await supabase.rpc("get_public_quote", { p_slug: `q_${quote.id}_${quote.client_view_token}` });
+    if (data) setQuote(data as unknown as PublicQuote);
+  };
+
+  const canCheckout = quote.status !== "aprovado" && quote.payment_status !== "paid";
+
   // Gera o link de checkout InfinityPay. Usado tanto antes da aprovação quanto depois (pedido aprovado sem pagamento).
   const startInfinityPay = async () => {
     try {
+      trackMetaEvent("InitiateCheckout", { value: total, currency: "BRL" });
       toast.loading("Gerando link de pagamento...", { id: "ip-link" });
       const { data, error } = await supabase.functions.invoke(
         `${FN_PREFIX}infinitypay-create-link`,
@@ -380,11 +372,28 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
             </div>
 
             <p className="text-slate-600 leading-relaxed mb-10 max-w-xl">
-              Confira abaixo os detalhes da sua proposta personalizada. Estamos prontos para iniciar a produção assim que você aprovar.
+              {canCheckout
+                ? "Seu orçamento está pronto. Confira o endereço e finalize o pedido aqui mesmo."
+                : "Confira abaixo os detalhes do seu pedido."}
             </p>
 
-            {/* Metadata grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+            {canCheckout && (
+              <div id="fechar-pedido" className="scroll-mt-6">
+                <PublicCheckoutCard
+                  quote={quote}
+                  total={total}
+                  onUpdated={reloadQuote}
+                  onPayNow={startInfinityPay}
+                  onPayOnDelivery={() => {
+                    setIsSigning(true);
+                    setTimeout(() => document.getElementById("acoes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Metadata grid — durante o fechamento, endereço e prazo ficam no card acima */}
+            {!canCheckout && <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
               <div className="p-4 bg-slate-50 border border-slate-100 rounded-lg">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
                   <MapPin className="w-3 h-3" /> Endereço de Entrega
@@ -398,10 +407,10 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                   <Truck className="w-3 h-3" /> Prazo Estimado
                 </p>
                 <p className="font-semibold text-slate-800 text-sm">
-                  {quote.deadline || "A combinar"}
+                  {quote.deadline ? new Date(`${quote.deadline}T12:00:00`).toLocaleDateString("pt-BR") : "A combinar"}
                 </p>
               </div>
-            </div>
+            </div>}
 
             {/* Items */}
             <div className="space-y-6">
@@ -545,13 +554,13 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
                   )}
                 </div>
                 <button
-                  onClick={() => document.getElementById('acoes')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  onClick={() => document.getElementById(quote.payment_status === 'paid' ? 'acoes' : 'fechar-pedido')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                   className="block w-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-white text-center font-bold py-4 rounded-lg transition-all shadow-lg uppercase tracking-wide text-sm"
                 >
-                  Aprovar e Pagar
+                  Finalizar pedido
                 </button>
                 <p className="text-[10px] text-slate-500 text-center uppercase font-medium tracking-widest">
-                  PIX • Cartão • Assinatura Digital
+                  Pix • Cartão em até 3x
                 </p>
               </div>
             )}
@@ -614,145 +623,18 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
             </div>
           )}
 
-          {isPaying && quote.status !== "aprovado" && settings?.nubank_pix_key && (
-            <div className="bg-white p-6 md:p-8 rounded-3xl border-2 border-green-500/20 shadow-xl animate-in zoom-in-95 space-y-6">
-              <div className="text-center space-y-1">
-                <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm text-green-600">Pagamento via PIX</h3>
-                <p className="text-xs text-slate-500 font-bold">Escaneie o QR Code ou use a chave abaixo</p>
-              </div>
-
-              <div className="flex flex-col items-center gap-6 py-4">
-                <div className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center border-2 border-dashed border-green-100 shadow-inner overflow-hidden">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6)))}`} 
-                    alt="QR Code PIX" 
-                    className="w-48 h-48"
-                  />
-                </div>
-                
-                <div className="w-full space-y-3">
-                  <div className="bg-slate-50 p-4 rounded-xl flex flex-col items-center gap-2 border border-slate-200">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Código PIX Copia e Cola</p>
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex-1 truncate font-mono text-[10px] text-slate-500 bg-white p-2 rounded border">
-                        {generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6))}
-                      </div>
-                      <Button 
-                        size="icon" aria-label="Copiar código PIX" 
-                        variant="secondary" 
-                        className="shrink-0 h-10 w-10 rounded-lg"
-                        onClick={() => {
-                          const payload = generatePixPayload(settings?.nubank_pix_key ?? "", total, settings?.nubank_pix_name || "MELHORACO", "FORTALEZA", quote.order_token || quote.id.slice(0, 6));
-                          navigator.clipboard.writeText(payload);
-                          toast.success("Código PIX copiado!");
-                        }}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-green-50/50 p-4 rounded-xl flex flex-col items-center gap-2 border border-green-100">
-                    <p className="text-[10px] font-black uppercase text-green-600 tracking-widest">Chave PIX</p>
-                    <div className="font-bold text-slate-900 flex items-center gap-2">
-                       {settings?.nubank_pix_key ?? ""}
-                       <Button 
-                        size="icon" aria-label="Copiar chave PIX" 
-                        variant="ghost" 
-                        className="h-6 w-6 text-slate-400 hover:text-primary"
-                        onClick={() => {
-                          navigator.clipboard.writeText(settings?.nubank_pix_key ?? "");
-                          toast.success("Chave PIX copiada!");
-                        }}
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-
-                <div className="w-full pt-4 border-t">
-                  <label className="flex flex-col items-center gap-3 cursor-pointer group">
-                    <div className="w-full h-16 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center gap-2 group-hover:border-primary transition-all group-hover:bg-primary/5">
-                      <Upload className="w-5 h-5 text-slate-400 group-hover:text-primary" />
-                      <span className="text-xs font-black uppercase text-slate-400 group-hover:text-primary">Anexar Comprovante</span>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={handleReceiptUpload} />
-                  </label>
-                </div>
-              </div>
-
-              <Button variant="ghost" className="w-full h-12 rounded-xl font-bold" onClick={() => setIsPaying(false)}>VOLTAR</Button>
-            </div>
+          {!isSigning && quote.status !== "aprovado" && (
+            <button
+              onClick={() => {
+                const msg = encodeURIComponent(`Olá, estou vendo o orçamento #${quote.order_token || quote.id.slice(0,8)} e gostaria de tirar uma dúvida.`);
+                openTrackedWhatsApp(`https://wa.me/5585992753337?text=${msg}`);
+              }}
+              className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-green-600 transition-colors uppercase tracking-widest py-2"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              Dúvidas? Falar no WhatsApp
+            </button>
           )}
-
-          {!isSigning && !isPaying && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.06)] p-6 md:p-8 space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Escolha como continuar</h3>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:inline">Pagamento seguro</span>
-              </div>
-
-              {quote.status !== "aprovado" ? (
-                <>
-                  {/* Primary CTA — Card */}
-                  <Button
-                    onClick={startInfinityPay}
-                    className="w-full h-14 rounded-lg font-bold gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-white shadow-lg uppercase tracking-wide text-sm"
-                  >
-                    <CreditCard className="w-5 h-5" />
-                    Pagar com Cartão
-                    <span className="text-[10px] font-medium opacity-70 ml-1">• InfinityPay</span>
-                  </Button>
-
-                  {/* Secondary row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Button
-                      onClick={() => {
-                        if (!settings?.nubank_pix_key) return toast.error("Pix indisponível no momento. Use o cartão ou fale com a gente.");
-                        setIsPaying(true);
-                      }}
-                      variant="outline"
-                      className="h-12 rounded-lg font-bold gap-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 text-slate-700 uppercase tracking-wide text-xs"
-                    >
-                      <QrCode className="w-4 h-4" />
-                      Pagar via PIX
-                    </Button>
-                    <Button
-                      onClick={() => setIsSigning(true)}
-                      variant="outline"
-                      className="h-12 rounded-lg font-bold gap-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 text-slate-700 uppercase tracking-wide text-xs"
-                    >
-                      <PenTool className="w-4 h-4" />
-                      Assinar e Fechar
-                    </Button>
-                  </div>
-
-                  {/* Tertiary — help */}
-                  <button
-                    onClick={() => {
-                      const msg = encodeURIComponent(`Olá, estou vendo o orçamento #${quote.order_token || quote.id.slice(0,8)} e gostaria de tirar uma dúvida.`);
-                      openTrackedWhatsApp(`https://wa.me/5511942637222?text=${msg}`);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-green-600 transition-colors uppercase tracking-widest pt-2"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    Dúvidas? Falar no WhatsApp
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-bold text-green-800 text-sm">Pedido aprovado e assinado</p>
-                    <p className="text-xs text-green-700/80">Nossa equipe já iniciou a produção.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
 
           {quote.status === "aprovado" && (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -782,14 +664,13 @@ const QuotePortal = ({ quote: initialQuote }: { quote: PublicQuote }) => {
               {quote.payment_status !== "paid" && total > 0 && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-3">
                   <p className="font-black text-slate-900 text-sm">Pagamento pendente</p>
-                  <p className="text-xs text-slate-500">Você pode pagar agora com cartão pelo link seguro da InfinityPay.</p>
+                  <p className="text-xs text-slate-500">Você pode pagar agora com Pix ou cartão pelo link seguro da InfinityPay.</p>
                   <Button
                     onClick={startInfinityPay}
                     className="w-full h-14 rounded-lg font-bold gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-white shadow-lg uppercase tracking-wide text-sm"
                   >
                     <CreditCard className="w-5 h-5" />
-                    Pagar com Cartão
-                    <span className="text-[10px] font-medium opacity-70 ml-1">• InfinityPay</span>
+                    Pagar agora · Pix ou cartão
                   </Button>
                 </div>
               )}

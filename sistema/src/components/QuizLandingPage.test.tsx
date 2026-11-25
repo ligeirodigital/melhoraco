@@ -17,13 +17,10 @@ function fillQuiz() {
   fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
   fireEvent.change(screen.getByPlaceholderText("Ex: João"), { target: { value: "Teste" } });
   fireEvent.change(screen.getByPlaceholderText("(85) 99999-9999"), { target: { value: "85999999999" } });
-  fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
-  fireEvent.change(screen.getByPlaceholderText("Nome da rua"), { target: { value: "Rua Teste" } });
-  fireEvent.change(screen.getByPlaceholderText("123"), { target: { value: "1" } });
 }
 it("Lead só dispara depois de salvar e conserva o ID para deduplicação", async () => {
   insert.mockResolvedValue({ error: null }); fillQuiz();
-  fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+  fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
   await screen.findByText("Seu orçamento está pronto 🎉");
   expect(insert).toHaveBeenCalledWith(expect.objectContaining({ landing_page_id: "lp-123", event_id: "lead-event", quantity: 3, total_value: 177, desired_number: "123" }));
   expect(pixel).toHaveBeenCalledWith("Lead", expect.objectContaining({ value: 177, currency: "BRL", num_items: 3 }), "lead-event");
@@ -31,10 +28,10 @@ it("Lead só dispara depois de salvar e conserva o ID para deduplicação", asyn
 });
 it("falha de insert mantém dados e não emite Lead ou Contact", async () => {
   insert.mockResolvedValue({ error: { code: "42501", message: "denied" } }); fillQuiz();
-  fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+  fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
   await screen.findByRole("alert");
   expect(report).toHaveBeenCalled(); expect(pixel).not.toHaveBeenCalled(); expect(contact).not.toHaveBeenCalled();
-  expect(screen.getByPlaceholderText("Nome da rua")).toHaveValue("Rua Teste");
+  expect(screen.getByPlaceholderText("Ex: João")).toHaveValue("Teste");
 });
 it("cria o orçamento e leva o cliente direto para ele, sem abrir o WhatsApp", async () => {
   catalog.product = { id: "prod-15", price: 59 };
@@ -45,7 +42,7 @@ it("cria o orçamento e leva o cliente direto para ele, sem abrir o WhatsApp", a
   Object.defineProperty(window, "location", { configurable: true, value: { ...original, assign, pathname: "/sistema/p/quiz" } });
   try {
     fillQuiz();
-    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+    fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
     await waitFor(() => expect(assign).toHaveBeenCalledWith("https://site.test/sistema/p/q_q1_tok"));
   } finally {
     Object.defineProperty(window, "location", { configurable: true, value: original });
@@ -64,7 +61,7 @@ it("falha ao criar o orçamento não perde o lead nem trava o cliente", async ()
   insert.mockResolvedValue({ error: null });
   rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
   fillQuiz();
-  fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+  fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
   await screen.findByText("Seu orçamento está pronto 🎉");
   expect(screen.queryByRole("link", { name: /VER MEU ORÇAMENTO/ })).toBeNull();
   expect(window.open).not.toHaveBeenCalled();
@@ -90,7 +87,7 @@ it("cria o orçamento mesmo quando o catálogo ainda não tinha carregado", asyn
   Object.defineProperty(window, "location", { configurable: true, value: { ...original, assign, pathname: "/sistema/p/quiz" } });
   try {
     fillQuiz();
-    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+    fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
     await waitFor(() => expect(assign).toHaveBeenCalledWith("https://site.test/sistema/p/q_q2_t2"));
   } finally {
     Object.defineProperty(window, "location", { configurable: true, value: original });
@@ -118,10 +115,7 @@ it("cliente escolhe o tamanho e o orçamento sai com o produto e o preço dele",
     fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
     fireEvent.change(screen.getByPlaceholderText("Ex: João"), { target: { value: "Ana" } });
     fireEvent.change(screen.getByPlaceholderText("(85) 99999-9999"), { target: { value: "85988887777" } });
-    fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
-    fireEvent.change(screen.getByPlaceholderText("Nome da rua"), { target: { value: "Rua A" } });
-    fireEvent.change(screen.getByPlaceholderText("123"), { target: { value: "9" } });
-    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+    fireEvent.click(screen.getByRole("button", { name: /VER MEU ORÇAMENTO/ }));
     await waitFor(() => expect(assign).toHaveBeenCalled());
   } finally {
     Object.defineProperty(window, "location", { configurable: true, value: original });

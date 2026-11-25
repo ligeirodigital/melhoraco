@@ -1,0 +1,9 @@
+-- Aplicado no banco em 25/11/2026 (migração melhoraco_public_checkout_address_installation).
+-- 1) create_public_order passa a gravar quotes.delivery_address quando recebe endereço.
+-- 2) melhoraco.update_public_quote_checkout(p_quote_id, p_token, p_cep, p_street, p_number,
+--    p_neighborhood, p_city, p_complement, p_installation): cliente informa o endereço e liga/
+--    desliga a instalação (R$ 100 fixo no servidor) pela página do orçamento; só para orçamento
+--    não pago e não aprovado, validando o client_view_token. Grant para anon/authenticated.
+-- 3) Pix pela chave (Nubank) desativado: business_settings.nubank_pix_key/name = NULL; todo
+--    pagamento público passa pela InfinityPay (Pix ou cartão, confirmação automática por webhook).
+--    get_public_pix_settings deixa de ser usada e é removida depois do deploy.
