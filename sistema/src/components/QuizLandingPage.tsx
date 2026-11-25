@@ -1,7 +1,8 @@
 import { CatalogPrice } from "@/components/catalog/CatalogPrice";
 import { ProductImage } from "@/components/catalog/ProductImage";
-import { useLandingCatalog } from "@/hooks/useLandingCatalog";
-import { useState, useEffect, useRef } from "react";
+import { fetchLandingProduct, useLandingCatalog } from "@/hooks/useLandingCatalog";
+import { countPieces } from "@/lib/catalog";
+import { useState, useRef } from "react";
 import { 
   Clock, 
   CheckCircle2, 
@@ -24,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.jfif";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatQuote";
 import { Helmet } from "react-helmet-async";
@@ -54,7 +56,6 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
   const data = { ...pageData, price: product?.price ?? pageData.price, original_price: product ? product.compare_at_price : pageData.original_price, hero_image_url: product?.image_url || pageData.hero_image_url };
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60);
   const utm = useUTM();
   const [submitError, setSubmitError] = useState("");
   const submitting = useRef(false);
@@ -65,7 +66,6 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
 
   // Form State
   const [formData, setFormData] = useState({
-    quantity: 1,
     first_name: "",
     last_name: "",
     whatsapp: "",
@@ -78,21 +78,9 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     complement: "",
   });
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      // Não consome CPU/render quando a aba não está visível.
-      if (document.visibilityState !== "visible") return;
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 24 * 60 * 60));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
+  // A quantidade sai do próprio número da casa: "1208" são 4 peças,
+  // "125 / 340" são 6. Evita a etapa de quantidade e o erro de contagem.
+  const quantity = countPieces(formData.desired_number);
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
@@ -134,14 +122,14 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     submitting.current = true;
     setSubmitError("");
     setLoading(true);
-    const total_value = formData.quantity * (data.price || 59);
+    const total_value = quantity * (data.price || 59);
     
     try {
       const { error } = await supabase.from("quiz_leads").insert({
         ...(data.trackingContext ?? { landing_page_id: data.id }),
         event_id: leadEventId.current,
         page_path: window.location.pathname,
-        quantity: formData.quantity,
+        quantity,
         total_value,
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -157,12 +145,15 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
       });
 
       if (error && error.code !== "23505") throw error;
-      trackMetaEvent("Lead", { value: total_value, currency: "BRL", num_items: formData.quantity }, leadEventId.current);
+      trackMetaEvent("Lead", { value: total_value, currency: "BRL", num_items: quantity }, leadEventId.current);
 
       // Cria o orçamento de verdade no sistema (cliente + itens), com a origem
       // da campanha. Uma falha aqui não perde o lead, que já foi salvo acima.
       let link: string | null = quoteUrl;
-      if (!link && product?.id) {
+      // Se o catálogo ainda não carregou (internet lenta), busca o produto agora
+      // em vez de deixar o cliente sem orçamento.
+      const orderProduct = product ?? await fetchLandingProduct(pageData.title || pageData.headline).catch(() => undefined);
+      if (!link && orderProduct?.id) {
         try {
           const fullName = `${formData.first_name} ${formData.last_name}`.trim();
           const address = [formData.street, formData.neighborhood, formData.city].filter(Boolean).join(", ");
@@ -179,8 +170,8 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 notes: `Número(s) desejado(s): ${formData.desired_number}\nOrigem: LP ${window.location.pathname}`,
               },
               attribution: utm,
-              items: [{ product_id: product.id, quantity: formData.quantity }],
-            } as any,
+              items: [{ product_id: orderProduct.id, quantity }],
+            } as unknown as Json,
           });
           if (orderError) throw orderError;
           const res = order as { ok?: boolean; quote_id?: string; token?: string; reason?: string } | null;
@@ -209,8 +200,8 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
     }
   };
 
-  const totalValue = formData.quantity * (data.price || 59);
-  const progress = (step / 5) * 100;
+  const totalValue = quantity * (data.price || 59);
+  const progress = ((step - 1) / 3) * 100;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-green-100 selection:text-green-900 flex flex-col">
@@ -238,14 +229,14 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
         {step > 1 && step < 5 && (
           <div className="flex items-center gap-4">
             <Progress value={progress} className="w-32 h-2" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Etapa {step}/4</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Etapa {step - 1}/3</span>
           </div>
         )}
       </header>
 
       <main className="flex-1 flex flex-col">
         {step === 1 && (
-          <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-4xl mx-auto w-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <section className="flex-1 flex flex-col justify-center px-6 pt-8 pb-32 md:py-12 max-w-4xl mx-auto w-full space-y-8 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="space-y-6 text-center">
               <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -259,7 +250,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
               <div className="flex flex-col md:flex-row items-center justify-center gap-8">
                 <div className="relative group">
                   <div className="bg-white p-4 rounded-[32px] shadow-2xl border border-slate-100 rotate-2 group-hover:rotate-0 transition-transform duration-500">
-                    <div className="w-64 h-64 md:w-80 md:h-80 bg-slate-100 rounded-[24px] overflow-hidden">
+                    <div className="w-48 h-48 md:w-80 md:h-80 bg-slate-100 rounded-[24px] overflow-hidden">
                       <ProductImage src={data.hero_image_url} name={data.title} className="w-full h-full" />
                     </div>
                   </div>
@@ -271,10 +262,10 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                     "Inox AISI 304 legítimo",
                     "Não enferruja (Garantia Eterna)",
                     "Acabamento Polido Premium",
-                    "Entrega grátis em Fortaleza",
-                    "Fabricação em até 7 dias",
+                    "Entrega grátis em Fortaleza pagando no pedido",
+                    "Pronto em 24h (15 cm)",
                     "Até 3x sem juros no cartão",
-                    "Pague somente na entrega"
+                    "Ou pague na entrega (frete à parte)"
                   ].map((benefit, i) => (
                     <div key={i} className="flex items-center gap-3 font-bold text-slate-600">
                       <div className="w-6 h-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center shrink-0">
@@ -295,53 +286,51 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
               <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </Button>
 
-            <div className="text-center space-y-4">
-               <div className="bg-green-600 text-white py-3 px-6 rounded-xl inline-flex items-center gap-3 font-mono font-black shadow-lg">
-                  <Clock className="w-5 h-5 animate-pulse" />
-                  PROMOÇÃO EXPIRA EM: {formatTime(timeLeft)}
-               </div>
-            </div>
           </section>
         )}
 
         {step === 2 && (
           <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="space-y-2 text-center">
-              <h2 className="text-3xl font-black tracking-tighter">Quantos números você precisa?</h2>
+              <h2 className="text-3xl font-black tracking-tighter">Qual é o número da sua casa?</h2>
               <p className="text-slate-500 font-medium">{formatCurrency(data.price || 59)} por dígito</p>
             </div>
 
             <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 space-y-8">
-              <div className="flex items-center justify-center gap-6">
-                <Button 
-                  variant="outline" 
-                  className="w-16 h-16 rounded-2xl text-2xl font-black border-2"
-                  onClick={() => setFormData(p => ({ ...p, quantity: Math.max(1, p.quantity - 1) }))}
-                >
-                  -
-                </Button>
-                <div className="w-24 text-center">
-                  <span className="text-5xl font-black tracking-tighter">{formData.quantity}</span>
+              <div className="space-y-2">
+                <label htmlFor="quiz-number" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Número(s) da fachada</label>
+                <div className="relative">
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                  <Input
+                    id="quiz-number"
+                    autoFocus
+                    inputMode="numeric"
+                    placeholder="Ex: 1208"
+                    className="pl-12 h-16 rounded-xl font-black text-2xl tracking-widest border-slate-200"
+                    value={formData.desired_number}
+                    onChange={e => setFormData(p => ({ ...p, desired_number: e.target.value.slice(0, 40) }))}
+                  />
                 </div>
-                <Button 
-                  variant="outline" 
-                  className="w-16 h-16 rounded-2xl text-2xl font-black border-2"
-                  onClick={() => setFormData(p => ({ ...p, quantity: p.quantity + 1 }))}
-                >
-                  +
-                </Button>
+                <p className="text-[11px] font-medium text-slate-400">Mais de um número? Separe com barra: 125 / 340</p>
               </div>
 
-              <div className="bg-slate-900 text-white p-8 rounded-3xl space-y-2 text-center shadow-2xl shadow-slate-900/20">
-                <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60">Total do Investimento</p>
-                <p className="text-5xl font-black tracking-tighter">{formatCurrency(totalValue)}</p>
-              </div>
+              {quantity > 0 && (
+                <div className="bg-slate-900 text-white p-6 rounded-3xl space-y-3 text-center shadow-2xl shadow-slate-900/20">
+                  <div className="flex flex-wrap justify-center gap-2" aria-hidden="true">
+                    {formData.desired_number.replace(/[^0-9A-Za-z]/g, "").split("").slice(0, 12).map((ch, i) => (
+                      <span key={i} className="w-10 h-14 rounded-lg bg-gradient-to-b from-slate-100 to-slate-400 text-slate-900 font-black text-3xl flex items-center justify-center shadow-inner">{ch}</span>
+                    ))}
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60">{quantity} {quantity === 1 ? "dígito" : "dígitos"} × {formatCurrency(data.price || 59)}</p>
+                  <p className="text-5xl font-black tracking-tighter">{formatCurrency(totalValue)}</p>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {[
-                  { icon: Truck, text: "Entrega grátis para Fortaleza" },
+                  { icon: Truck, text: "Entrega grátis em Fortaleza pagando no pedido" },
                   { icon: CreditCard, text: "Até 3x sem juros no cartão" },
-                  { icon: MessageSquare, text: "Pode pagar na entrega" }
+                  { icon: Clock, text: "15 cm pronto em 24h" }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 font-bold text-slate-500 text-sm">
                     <item.icon className="w-5 h-5 text-green-500" />
@@ -351,43 +340,38 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
               </div>
             </div>
 
-            <Button 
-              onClick={nextStep}
-              className="w-full h-16 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-lg gap-3"
-            >
-              CONTINUAR <ChevronRight className="w-5 h-5" />
-            </Button>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={prevStep} className="h-16 px-6 rounded-2xl font-bold border-2">VOLTAR</Button>
+              <Button
+                onClick={nextStep}
+                disabled={quantity === 0}
+                className="flex-1 h-16 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-lg gap-3"
+              >
+                CONTINUAR <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
           </section>
         )}
 
         {step === 3 && (
           <section className="flex-1 flex flex-col justify-center px-6 py-12 max-w-xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="space-y-2 text-center">
-              <h2 className="text-3xl font-black tracking-tighter">Para quem vamos enviar o orçamento?</h2>
-              <p className="text-slate-500 font-medium">Preencha seus dados para personalizarmos seu atendimento.</p>
+              <h2 className="text-3xl font-black tracking-tighter">Em nome de quem fica o orçamento?</h2>
+              <p className="text-slate-500 font-medium">Usamos o WhatsApp só para avisar sobre o seu pedido.</p>
             </div>
 
             <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nome</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                    <Input 
-                      placeholder="Ex: João" 
-                      className="pl-10 h-14 rounded-xl font-bold border-slate-200"
-                      value={formData.first_name}
-                      onChange={e => setFormData(p => ({ ...p, first_name: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sobrenome</label>
-                  <Input 
-                    placeholder="Ex: Silva" 
-                    className="h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.last_name}
-                    onChange={e => setFormData(p => ({ ...p, last_name: e.target.value }))}
+              <div className="space-y-2">
+                <label htmlFor="quiz-name" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Seu nome</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <Input
+                    id="quiz-name"
+                    autoComplete="name"
+                    placeholder="Ex: João"
+                    className="pl-10 h-14 rounded-xl font-bold border-slate-200"
+                    value={formData.first_name}
+                    onChange={e => setFormData(p => ({ ...p, first_name: e.target.value }))}
                   />
                 </div>
               </div>
@@ -397,7 +381,9 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                   <Input 
-                    placeholder="(85) 99999-9999" 
+                    placeholder="(85) 99999-9999"
+                    inputMode="tel"
+                    autoComplete="tel" 
                     className="pl-10 h-14 rounded-xl font-bold border-slate-200"
                     value={formData.whatsapp}
                     onChange={e => setFormData(p => ({ ...p, whatsapp: formatWhatsApp(e.target.value) }))}
@@ -405,26 +391,13 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Número(s) Desejado(s)</label>
-                <div className="relative">
-                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                  <Input 
-                    placeholder="Ex: 125 / 340 / 1208" 
-                    className="pl-10 h-14 rounded-xl font-bold border-slate-200"
-                    value={formData.desired_number}
-                    onChange={e => setFormData(p => ({ ...p, desired_number: e.target.value }))}
-                  />
-                </div>
-                <p className="text-[10px] font-medium text-slate-400">Informe os números que deseja fabricar em aço inox.</p>
-              </div>
             </div>
 
             <div className="flex gap-4">
               <Button variant="outline" onClick={prevStep} className="h-16 px-6 rounded-2xl font-bold border-2">VOLTAR</Button>
               <Button 
                 onClick={nextStep}
-                disabled={!formData.first_name || !formData.whatsapp || !formData.desired_number}
+                disabled={!formData.first_name.trim() || formData.whatsapp.replace(/\D/g, "").length < 10}
                 className="flex-1 h-16 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-lg gap-3"
               >
                 CONTINUAR <ChevronRight className="w-5 h-5" />
@@ -542,7 +515,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                <div className="space-y-4 pt-4">
                   <div className="flex justify-between items-center border-b pb-4 border-slate-50">
                     <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Quantidade</span>
-                    <span className="font-black text-xl">{formData.quantity} números</span>
+                    <span className="font-black text-xl">{quantity} {quantity === 1 ? "dígito" : "dígitos"}</span>
                   </div>
                   <div className="flex justify-between items-center border-b pb-4 border-slate-50">
                     <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Valor Total</span>
@@ -565,7 +538,7 @@ export const QuizLandingPage = ({ data: pageData }: QuizLandingPageProps) => {
                 const message = `Olá! Vim pelo site da Melhoraço.
  
  Meu pedido:
- • Quantidade: ${formData.quantity} números
+ • Quantidade: ${quantity} {quantity === 1 ? "dígito" : "dígitos"}
  • Valor total: ${formatCurrency(totalValue)}
 • Número desejado: ${formData.desired_number}
 
@@ -596,6 +569,19 @@ Quero confirmar meu pedido.`;
         )}
       </main>
 
+      {/* No celular o botão principal fica sempre visível na primeira tela,
+          sem precisar rolar até o fim da página. */}
+      {step === 1 && (
+        <div className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t px-4 py-3">
+          <Button
+            onClick={nextStep}
+            className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-lg gap-2"
+          >
+            FAZER MEU ORÇAMENTO <ArrowRight className="w-5 h-5" />
+          </Button>
+        </div>
+      )}
+
       {/* Floating WhatsApp Button */}
       {step < 5 && (
         <button 
@@ -604,7 +590,7 @@ Quero confirmar meu pedido.`;
             
             openTrackedWhatsApp(`https://wa.me/${phone}`, data.trackingContext);
           }}
-          className="fixed bottom-6 right-6 w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform z-40 animate-in fade-in zoom-in"
+          className={cn("fixed right-6 w-16 h-16", step === 1 ? "bottom-24 md:bottom-6" : "bottom-6", " bg-green-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform z-40 animate-in fade-in zoom-in")}
         >
           <Phone className="w-8 h-8" />
         </button>
