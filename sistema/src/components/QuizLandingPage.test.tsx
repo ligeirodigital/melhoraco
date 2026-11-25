@@ -2,21 +2,21 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { HelmetProvider } from "react-helmet-async";
 import { QuizLandingPage } from "./QuizLandingPage";
-const { insert, rpc, pixel, report, contact, catalog } = vi.hoisted(() => ({ insert: vi.fn(), rpc: vi.fn(), pixel: vi.fn(), report: vi.fn(), contact: vi.fn(), catalog: { product: undefined as undefined | { id: string; price: number } } }));
+const { insert, rpc, pixel, report, contact, catalog } = vi.hoisted(() => ({ insert: vi.fn(), rpc: vi.fn(), pixel: vi.fn(), report: vi.fn(), contact: vi.fn(), catalog: { product: undefined as undefined | { id: string; price: number }, fetched: undefined as undefined | { id: string; price: number } } }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => ({ insert }), rpc } }));
 vi.mock("@/lib/metaPixel", () => ({ newEventId: () => "lead-event", trackMetaEvent: pixel }));
 vi.mock("@/lib/reportError", () => ({ reportError: report }));
-vi.mock("@/hooks/useLandingCatalog", () => ({ useLandingCatalog: () => catalog.product }));
+vi.mock("@/hooks/useLandingCatalog", () => ({ useLandingCatalog: () => catalog.product, fetchLandingProduct: async () => catalog.fetched }));
 vi.mock("@/lib/appUrl", () => ({ appUrl: () => "https://site.test/sistema" }));
 vi.mock("@/lib/publicTracking", () => ({ trackWhatsAppClick: contact, openTrackedWhatsApp: contact }));
-beforeEach(() => { vi.clearAllMocks(); catalog.product = undefined; localStorage.clear(); vi.spyOn(window, "open").mockImplementation(() => null); });
+beforeEach(() => { vi.clearAllMocks(); catalog.product = undefined; catalog.fetched = undefined; localStorage.clear(); vi.spyOn(window, "open").mockImplementation(() => null); });
 function fillQuiz() {
   render(<HelmetProvider><QuizLandingPage data={{ id: "lp-123", title: "Quiz", headline: "Quiz", price: 59, trackingContext: { landing_page_id: "lp-123" } }} /></HelmetProvider>);
-  fireEvent.click(screen.getByRole("button", { name: /FAZER MEU ORÇAMENTO/ }));
+  fireEvent.click(screen.getAllByRole("button", { name: /FAZER MEU ORÇAMENTO/ })[0]);
+  fireEvent.change(screen.getByPlaceholderText("Ex: 1208"), { target: { value: "123" } });
   fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
   fireEvent.change(screen.getByPlaceholderText("Ex: João"), { target: { value: "Teste" } });
   fireEvent.change(screen.getByPlaceholderText("(85) 99999-9999"), { target: { value: "85999999999" } });
-  fireEvent.change(screen.getByPlaceholderText("Ex: 125 / 340 / 1208"), { target: { value: "123" } });
   fireEvent.click(screen.getByRole("button", { name: /CONTINUAR/ }));
   fireEvent.change(screen.getByPlaceholderText("Nome da rua"), { target: { value: "Rua Teste" } });
   fireEvent.change(screen.getByPlaceholderText("123"), { target: { value: "1" } });
@@ -25,8 +25,8 @@ it("Lead só dispara depois de salvar e conserva o ID para deduplicação", asyn
   insert.mockResolvedValue({ error: null }); fillQuiz();
   fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
   await screen.findByText("Seu orçamento está pronto 🎉");
-  expect(insert).toHaveBeenCalledWith(expect.objectContaining({ landing_page_id: "lp-123", event_id: "lead-event", total_value: 59 }));
-  expect(pixel).toHaveBeenCalledWith("Lead", expect.objectContaining({ value: 59, currency: "BRL" }), "lead-event");
+  expect(insert).toHaveBeenCalledWith(expect.objectContaining({ landing_page_id: "lp-123", event_id: "lead-event", quantity: 3, total_value: 177, desired_number: "123" }));
+  expect(pixel).toHaveBeenCalledWith("Lead", expect.objectContaining({ value: 177, currency: "BRL", num_items: 3 }), "lead-event");
   expect(insert.mock.invocationCallOrder[0]).toBeLessThan(pixel.mock.invocationCallOrder[0]);
 });
 it("falha de insert mantém dados e não emite Lead ou Contact", async () => {
@@ -53,7 +53,7 @@ it("cria o orçamento e leva o cliente direto para ele, sem abrir o WhatsApp", a
   expect(rpc).toHaveBeenCalledWith("create_public_order", { payload: expect.objectContaining({
     source: "lp",
     customer: expect.objectContaining({ name: "Teste", phone: "85999999999" }),
-    items: [{ product_id: "prod-15", quantity: 1 }],
+    items: [{ product_id: "prod-15", quantity: 3 }],
   }) });
   expect(insert.mock.invocationCallOrder[0]).toBeLessThan(rpc.mock.invocationCallOrder[0]);
   expect(window.open).not.toHaveBeenCalled();
@@ -70,4 +70,30 @@ it("falha ao criar o orçamento não perde o lead nem trava o cliente", async ()
   expect(window.open).not.toHaveBeenCalled();
   expect(pixel).toHaveBeenCalledWith("Lead", expect.anything(), "lead-event");
   expect(report).toHaveBeenCalled();
+});
+it("número da casa define a quantidade e o preço antes dos dados pessoais", () => {
+  render(<HelmetProvider><QuizLandingPage data={{ id: "lp-123", title: "Quiz", headline: "Quiz", price: 59 }} /></HelmetProvider>);
+  fireEvent.click(screen.getAllByRole("button", { name: /FAZER MEU ORÇAMENTO/ })[0]);
+  expect(screen.getByRole("button", { name: /CONTINUAR/ })).toBeDisabled();
+  fireEvent.change(screen.getByPlaceholderText("Ex: 1208"), { target: { value: "125 / 340" } });
+  expect(screen.getByText(/6 dígitos/)).toBeInTheDocument();
+  expect(screen.getByText(/354,00/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /CONTINUAR/ })).toBeEnabled();
+  expect(screen.queryByText(/PROMOÇÃO EXPIRA/)).toBeNull();
+});
+it("cria o orçamento mesmo quando o catálogo ainda não tinha carregado", async () => {
+  catalog.fetched = { id: "prod-15", price: 59 };
+  insert.mockResolvedValue({ error: null });
+  rpc.mockResolvedValue({ data: { ok: true, quote_id: "q2", token: "t2" }, error: null });
+  const assign = vi.fn();
+  const original = window.location;
+  Object.defineProperty(window, "location", { configurable: true, value: { ...original, assign, pathname: "/sistema/p/quiz" } });
+  try {
+    fillQuiz();
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/ }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith("https://site.test/sistema/p/q_q2_t2"));
+  } finally {
+    Object.defineProperty(window, "location", { configurable: true, value: original });
+  }
+  expect(rpc).toHaveBeenCalledWith("create_public_order", { payload: expect.objectContaining({ items: [{ product_id: "prod-15", quantity: 3 }] }) });
 });

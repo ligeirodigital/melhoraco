@@ -35,3 +35,8 @@ export function orderLabel(product: CatalogMetadata): string | null {
 export function itemCatalog(item: { product?: CatalogMetadata | null; products?: CatalogMetadata | null }): CatalogMetadata | null {
   return item.product ?? item.products ?? null;
 }
+
+/** Peças de inox de um número de fachada: cada dígito ou letra é uma peça ("125 / 340" = 6). */
+export function countPieces(value: string): number {
+  return (value.match(/[0-9A-Za-z]/g) ?? []).length;
+}

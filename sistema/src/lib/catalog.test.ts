@@ -26,3 +26,13 @@ describe("made to order", () => {
     expect(calculateInventoryStats([p], []).lowStockProducts).toBe(0);
   });
 });
+
+describe("countPieces", () => {
+  it("conta cada dígito ou letra do número da fachada", async () => {
+    const { countPieces } = await import("./catalog");
+    expect(countPieces("1208")).toBe(4);
+    expect(countPieces("125 / 340")).toBe(6);
+    expect(countPieces("12A")).toBe(3);
+    expect(countPieces("  ")).toBe(0);
+  });
+});

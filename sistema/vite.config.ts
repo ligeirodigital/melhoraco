@@ -34,6 +34,10 @@ export default defineConfig(({ mode }) => ({
           // que as usa é carregada dinamicamente.
           "react-pdf": ["@react-pdf/renderer"],
           "charts": ["recharts"],
+          // clsx é usado pelo app inteiro e também pelo recharts; sem um chunk
+          // próprio ele cai em "charts" e toda página (inclusive a LP) baixa
+          // os gráficos só para usar o clsx.
+          "utils": ["clsx", "tailwind-merge"],
           "motion": ["framer-motion"],
           "radix": [
             "@radix-ui/react-dialog",
