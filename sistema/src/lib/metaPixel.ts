@@ -1,5 +1,14 @@
+import { BASE_PATH } from "./appUrl";
+
 export const META_PIXEL_ID = "1286022477066942";
-export function isPublicTrackingRoute(path: string) {
+/** Aceita o caminho do roteador ("/p/quiz") ou do navegador ("/sistema/p/quiz"). */
+function withoutBasePath(path: string) {
+  if (!BASE_PATH) return path;
+  if (path === BASE_PATH) return "/";
+  return path.startsWith(`${BASE_PATH}/`) ? path.slice(BASE_PATH.length) : path;
+}
+export function isPublicTrackingRoute(rawPath: string) {
+  const path = withoutBasePath(rawPath);
   return /^\/p\/[^/]+\/?$/.test(path) || path === "/projetos" || /^\/loja(?:\/|$)/.test(path) || path === "/revendedores" || /^\/pedido\/[^/]+\/sucesso\/?$/.test(path);
 }
 type Fbq = ((...args: unknown[]) => void) & { queue?: unknown[][]; callMethod?: (...args: unknown[]) => void; loaded?: boolean; version?: string; push?: Fbq };
