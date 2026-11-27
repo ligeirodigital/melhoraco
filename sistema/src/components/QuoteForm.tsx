@@ -280,6 +280,12 @@ export default function QuoteForm({
     if (!clientName.trim()) {
       return toast.error("O nome do cliente é obrigatório");
     }
+
+    // WhatsApp é opcional, mas se for preenchido precisa de DDD + 9 dígitos (o link de pagamento depende disso).
+    const phoneDigits = clientPhone.replace(/\D/g, "");
+    if (phoneDigits && phoneDigits.length !== 11) {
+      return toast.error("WhatsApp deve ter DDD + 9 dígitos (11 números), ex.: 85999998888. Deixe em branco se não tiver.");
+    }
     
     if (items.length === 0) {
       return toast.error("Adicione pelo menos um item ao orçamento");
